@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using PMTS.Models;
 
 namespace PMTS.Models
 {
@@ -12,6 +13,8 @@ namespace PMTS.Models
         public PSQLcontext(DbContextOptions<PSQLcontext> options) 
             : base(options)
         { }
+        public DbSet<PMTS.Models.Tournament> Tournament { get; set; }
+        public DbSet<PMTS.Models.Bird> Bird { get; set; } = default!;
     }
 
     public class User
