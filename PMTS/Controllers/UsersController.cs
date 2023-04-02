@@ -51,20 +51,28 @@ namespace PMTS.Controllers
             return View();
         }
 
-        // POST: Users/Create
+        // POST: Register
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Route("Register")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Email,Password")] User user)
+        public async Task<IActionResult> Register([Bind("Id,Name,Email,Password")] User user)
         {
-            if (ModelState.IsValid)
+            //add check if user exists
+
+            if (!ModelState.IsValid)
             {
-                _context.Add(user);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                //_context.Add(user);
+                //await _context.SaveChangesAsync();
+                //return RedirectToAction(nameof(Index));
+                return View();
             }
-            return View(user);
+            //psql for salt: UPDATE public."Users" Set "Password" = crypt('slaptazodis123', gen_salt('bf')) WHERE public."Users"."Id" = 1;
+            _context.Add(user);
+            await _context.SaveChangesAsync();
+            TempData["RegisterSuccessMessage"] = "RegisterSuccess";
+            return View();
         }
 
         // GET: Users/Edit/5
