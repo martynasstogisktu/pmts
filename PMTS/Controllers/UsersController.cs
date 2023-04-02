@@ -60,6 +60,10 @@ namespace PMTS.Controllers
         public async Task<IActionResult> Register([Bind("Id,Name,Email,Password")] User user)
         {
             //add check if user exists
+            if (false)
+            {
+                ModelState.AddModelError("Exists", "Naudotojas nurodytu vardu ar slaptažodžiu jau egzistuoja.");
+            }
 
             if (!ModelState.IsValid)
             {
