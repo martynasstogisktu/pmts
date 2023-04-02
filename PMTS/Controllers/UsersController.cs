@@ -44,8 +44,9 @@ namespace PMTS.Controllers
             return View(user);
         }
 
-        // GET: Users/Create
-        public IActionResult Create()
+
+        [Route("Register")]
+        public IActionResult Register()
         {
             return View();
         }

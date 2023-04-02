@@ -1,0 +1,3 @@
+Transfer to env. variables:
+DB password
+JWT password
