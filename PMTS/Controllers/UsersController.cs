@@ -60,9 +60,10 @@ namespace PMTS.Controllers
         public async Task<IActionResult> Register([Bind("Id,Name,Email,Password")] User user)
         {
             //add check if user exists
-            if (false)
+            if (user.Name.Equals("negeras"))
             {
-                ModelState.AddModelError("Exists", "Naudotojas nurodytu vardu ar slaptažodžiu jau egzistuoja.");
+                ModelState.AddModelError("Name", "Naudotojas nurodytu vardu ar slaptažodžiu jau egzistuoja.");
+                TempData["RegisterStatus"] = "RegisterFailed";
             }
 
             if (!ModelState.IsValid)
@@ -75,7 +76,7 @@ namespace PMTS.Controllers
             //psql for salt: UPDATE public."Users" Set "Password" = crypt('slaptazodis123', gen_salt('bf')) WHERE public."Users"."Id" = 1;
             _context.Add(user);
             await _context.SaveChangesAsync();
-            TempData["RegisterSuccessMessage"] = "RegisterSuccess";
+            TempData["RegisterStatus"] = "RegisterSuccess";
             return View();
         }
 

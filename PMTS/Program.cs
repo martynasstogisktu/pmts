@@ -2,6 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using PMTS.Authentication;
 using PMTS.Models;
 using System.Configuration;
+using System.Globalization;
+
+CultureInfo.CurrentCulture = new CultureInfo("lt-LT");
 
 var builder = WebApplication.CreateBuilder(args);
 
