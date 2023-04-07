@@ -13,7 +13,8 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped<PmtsJwt>();
 
-builder.Services.AddDbContext<PSQLcontext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("PSQLcontext")));
+//builder.Services.AddDbContext<PSQLcontext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("PSQLcontext")));
+builder.Services.AddDbContext<PSQLcontext>(options => options.UseNpgsql(builder.Configuration["DB_STRING"]));
 
 var app = builder.Build();
 
