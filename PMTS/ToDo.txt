@@ -1,5 +1,5 @@
 Transfer to env. variables:
-DB password
+DB password - wip
 JWT password
 
 Add check if user exists on login
