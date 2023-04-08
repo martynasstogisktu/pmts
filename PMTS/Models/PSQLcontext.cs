@@ -38,5 +38,7 @@ namespace PMTS.Models
         [MaxLength(72, ErrorMessage = "Slaptažodis per ilgas.")]
         [MinLength(8, ErrorMessage = "Slaptažodis turi būti bent 8 simbolių ilgio.")]
         public string Password { get; set;}
+
+        public int? Role { get; set; } //admin or user
     }
 }
