@@ -2,4 +2,4 @@ Transfer to env. variables:
 DB password
 JWT password
 
-Add check if user exists on login
+Add password hashing

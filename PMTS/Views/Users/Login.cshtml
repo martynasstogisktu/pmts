@@ -1,0 +1,54 @@
+﻿@addTagHelper*, Microsoft.AspNetCore.Mvc.TagHelpers
+@model PMTS.DTOs.LoginDTO
+
+@{
+    ViewData["Title"] = "Prisijungimas";
+}
+
+<h1>Prisijungimas</h1>
+
+<hr />
+@if (TempData["LoginStatus"] != "LoginSuccess")
+{
+    <div class="row">
+        <div class="col-md-4">
+            <form asp-action="Login">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <label asp-for="Name" class="control-label">Vardas</label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Password" class="control-label">Slaptažodis</label>
+                    <input type="password" asp-for="Password" class="form-control" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Prisijungti" class="btn btn-primary" />
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+
+@if (TempData["LoginStatus"] == "LoginFailed")
+{
+    <h2>Prisijungimas nepavyko</h2>
+    <p>Bandykite dar kartą</p>
+}
+
+@if (TempData["LoginStatus"] == "LoggedOut")
+{
+    <h2>Sėkmingai atsijungėte</h2>
+}
+
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+}

@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using PMTS.Authentication;
+using PMTS.DTOs;
 using PMTS.Models;
 
 namespace PMTS.Controllers
@@ -12,10 +15,12 @@ namespace PMTS.Controllers
     public class UsersController : Controller
     {
         private readonly PSQLcontext _context;
+        private readonly PmtsJwt _pmtsJwt;
 
-        public UsersController(PSQLcontext context)
+        public UsersController(PSQLcontext context, PmtsJwt pmtsJwt)
         {
             _context = context;
+            _pmtsJwt = pmtsJwt;
         }
 
         // GET: Users
@@ -26,22 +31,20 @@ namespace PMTS.Controllers
                           Problem("Entity set 'PSQLcontext.Users'  is null.");
         }
 
-        // GET: Users/Details/5
-        public async Task<IActionResult> Details(int? id)
+        // GET: Users/Details
+        public async Task<IActionResult> Details()
         {
-            if (id == null || _context.Users == null)
+            try
             {
-                return NotFound();
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User user = GetUser(int.Parse(validatedToken.Issuer));
+                return View(user);
             }
-
-            var user = await _context.Users
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (user == null)
+            catch(Exception ex)
             {
-                return NotFound();
+                return RedirectToAction("Login");
             }
-
-            return View(user);
         }
 
 
@@ -59,10 +62,11 @@ namespace PMTS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register([Bind("Id,Name,Email,Password")] User user)
         {
-            //add check if user exists
-            if (user.Name.Equals("negeras"))
+            //visada grazina kad el. pastas arba vardas uzimtas (o ne kuris is ju), kad atskleistu maziau info
+            if (GetUser(user.Id) != null || GetUserByEmail(user.Email) != null)
             {
-                ModelState.AddModelError("Name", "Naudotojas nurodytu vardu ar slaptažodžiu jau egzistuoja.");
+                ModelState.AddModelError("Name", "Naudotojas nurodytu vardu ar el. paštu jau egzistuoja.");
+                ModelState.AddModelError("Email", "Naudotojas nurodytu vardu ar el. paštu jau egzistuoja.");
                 TempData["RegisterStatus"] = "RegisterFailed";
             }
 
@@ -78,6 +82,71 @@ namespace PMTS.Controllers
             await _context.SaveChangesAsync();
             TempData["RegisterStatus"] = "RegisterSuccess";
             return View();
+        }
+
+        [Route("Login")]
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+        // POST: Login
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Route("Login")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(LoginDTO login)
+        {
+            User user = GetUser(login.Name); 
+            if (user == null)
+            {
+                ModelState.AddModelError("Name", "Naudotojas nurodytu vardu nerastas.");
+                TempData["LoginStatus"] = "LoginFailed";
+            }
+
+            if (user.Password != login.Password)
+            {
+                ModelState.AddModelError("Password", "Slaptažodis neteisingas.");
+                TempData["LoginStatus"] = "LoginFailed";
+            }
+
+            if (!ModelState.IsValid)
+            {
+                //_context.Add(user);
+                //await _context.SaveChangesAsync();
+                //return RedirectToAction(nameof(Index));
+                return View();
+            }
+            //psql for salt: UPDATE public."Users" Set "Password" = crypt('slaptazodis123', gen_salt('bf')) WHERE public."Users"."Id" = 1;
+
+            string cookie = _pmtsJwt.Create(user.Id);
+            Response.Cookies.Append("userCookie", cookie, new CookieOptions
+            {
+                HttpOnly = true
+            });
+
+            TempData["LoginStatus"] = "LoginSuccess";
+            return RedirectToAction("Details");
+        }
+
+        [Route("Logout")]
+        public IActionResult Logout()
+        {
+            try
+            {
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                Response.Cookies.Delete("userCookie");
+                TempData["LoginStatus"] = "LoggedOut";
+
+                return RedirectToAction("Login");
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("Login");
+            }
+
         }
 
         // GET: Users/Edit/5
@@ -171,6 +240,19 @@ namespace PMTS.Controllers
         private bool UserExists(int id)
         {
           return (_context.Users?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+
+        private User GetUser(int id)
+        {
+            return _context.Users.FirstOrDefault(e => e.Id == id);
+        }
+        private User GetUser(string name)
+        {
+            return _context.Users.FirstOrDefault(e => e.Name == name);
+        }
+        private User GetUserByEmail(string email)
+        {
+            return _context.Users.FirstOrDefault(e => e.Email == email);
         }
     }
 }
