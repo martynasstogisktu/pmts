@@ -41,8 +41,9 @@ namespace PMTS.Controllers
                 User user = GetUser(int.Parse(validatedToken.Issuer));
                 return View(user);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
+                TempData["AuthStatus"] = "AuthError";
                 return RedirectToAction("Login");
             }
         }
@@ -63,7 +64,7 @@ namespace PMTS.Controllers
         public async Task<IActionResult> Register([Bind("Id,Name,Email,Password")] User user)
         {
             //visada grazina kad el. pastas arba vardas uzimtas (o ne kuris is ju), kad atskleistu maziau info
-            if (GetUser(user.Id) != null || GetUserByEmail(user.Email) != null)
+            if (GetUser(user.Name) != null || GetUserByEmail(user.Email) != null)
             {
                 ModelState.AddModelError("Name", "Naudotojas nurodytu vardu ar el. paštu jau egzistuoja.");
                 ModelState.AddModelError("Email", "Naudotojas nurodytu vardu ar el. paštu jau egzistuoja.");
@@ -78,6 +79,7 @@ namespace PMTS.Controllers
                 return View();
             }
             //psql for salt: UPDATE public."Users" Set "Password" = crypt('slaptazodis123', gen_salt('bf')) WHERE public."Users"."Id" = 1;
+            user.Admin = false;
             _context.Add(user);
             await _context.SaveChangesAsync();
             TempData["RegisterStatus"] = "RegisterSuccess";
@@ -127,7 +129,8 @@ namespace PMTS.Controllers
             });
 
             TempData["LoginStatus"] = "LoginSuccess";
-            return RedirectToAction("Details");
+            TempData["AuthStatus"] = "AuthSuccess";
+            return RedirectToAction("Index", "Tournaments");
         }
 
         [Route("Logout")]
@@ -144,6 +147,7 @@ namespace PMTS.Controllers
             }
             catch (Exception ex)
             {
+                TempData["AuthStatus"] = "AuthError";
                 return RedirectToAction("Login");
             }
 
@@ -237,20 +241,20 @@ namespace PMTS.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool UserExists(int id)
+        public bool UserExists(int id)
         {
           return (_context.Users?.Any(e => e.Id == id)).GetValueOrDefault();
         }
 
-        private User GetUser(int id)
+        public User GetUser(int id)
         {
             return _context.Users.FirstOrDefault(e => e.Id == id);
         }
-        private User GetUser(string name)
+        public User GetUser(string name)
         {
             return _context.Users.FirstOrDefault(e => e.Name == name);
         }
-        private User GetUserByEmail(string email)
+        public User GetUserByEmail(string email)
         {
             return _context.Users.FirstOrDefault(e => e.Email == email);
         }

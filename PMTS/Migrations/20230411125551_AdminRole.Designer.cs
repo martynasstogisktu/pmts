@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PMTS.Models;
@@ -11,9 +12,11 @@ using PMTS.Models;
 namespace PMTS.Migrations
 {
     [DbContext(typeof(PSQLcontext))]
-    partial class PSQLcontextModelSnapshot : ModelSnapshot
+    [Migration("20230411125551_AdminRole")]
+    partial class AdminRole
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -95,22 +98,13 @@ namespace PMTS.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Organizer")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<bool>("RestrictedTypes")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Tournament");
                 });
@@ -164,21 +158,9 @@ namespace PMTS.Migrations
 
             modelBuilder.Entity("PMTS.Models.Tournament", b =>
                 {
-                    b.HasOne("PMTS.Models.User", null)
-                        .WithMany("Tournaments")
-                        .HasForeignKey("UserId");
-                });
-
-            modelBuilder.Entity("PMTS.Models.Tournament", b =>
-                {
                     b.Navigation("Birds");
 
                     b.Navigation("Contestants");
-                });
-
-            modelBuilder.Entity("PMTS.Models.User", b =>
-                {
-                    b.Navigation("Tournaments");
                 });
 #pragma warning restore 612, 618
         }

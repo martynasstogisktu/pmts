@@ -39,6 +39,8 @@ namespace PMTS.Models
         [MinLength(8, ErrorMessage = "Slaptažodis turi būti bent 8 simbolių ilgio.")]
         public string Password { get; set;}
 
-        public int? Role { get; set; } //admin or user
+        public bool Admin { get; set; } = false; //admin or user
+
+        public List<Tournament>? Tournaments { get; set; }
     }
 }

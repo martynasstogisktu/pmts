@@ -11,8 +11,8 @@
         public DateTime EndTime { get; set; }
         public List<Contestant>? Contestants { get; set; }
         public List<Bird>? Birds { get; set; }
+        public string? Organizer { get; set; }
 
         //public List<Photo> Photos { get; set; }
-
     }
 }

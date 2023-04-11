@@ -39,6 +39,12 @@
     <p>Bandykite dar kartą</p>
 }
 
+@if (TempData["AuthStatus"] == "AuthError")
+{
+    <h2>Įvyko autentifikacijos klaida</h2>
+    <p>Prisijunkite dar kartą</p>
+}
+
 @if (TempData["LoginStatus"] == "LoggedOut")
 {
     <h2>Sėkmingai atsijungėte</h2>
