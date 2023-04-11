@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using PMTS.Authentication;
 using PMTS.Models;
 
@@ -60,7 +61,25 @@ namespace PMTS.Controllers
                     {
                         TempData["Organizer"] = "True";
                     }
-
+                    else
+                    {
+                        TempData["Organizer"] = "False";
+                    }
+                    if (!_context.Contestant.IsNullOrEmpty())
+                    {
+                        if(_context.Contestant.FirstOrDefault(m => m.UserName == user.Name && m.TournamentName == tournament.Name) != null)
+                        {
+                            TempData["IsContestant"] = "True";
+                        }
+                        else
+                        {
+                            TempData["IsContestant"] = "False";
+                        }
+                    }
+                    else
+                    {
+                        TempData["IsContestant"] = "False";
+                    }
                 }
             }
             catch (Exception ex)
@@ -70,6 +89,10 @@ namespace PMTS.Controllers
             if(tournament.RestrictedTypes)
             {
                 TempData["RestrictedTypes"] = "True";
+            }
+            else
+            {
+                TempData["RestrictedTypes"] = "False";
             }
             return View(tournament);
         }
@@ -126,6 +149,61 @@ namespace PMTS.Controllers
             
         }
 
+        // POST: Tournaments/Join
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [ValidateAntiForgeryToken]
+        [HttpPost, ActionName("Join")]
+        public async Task<IActionResult> Join(int? id)
+        {
+            if (id == null || _context.Tournament == null)
+            {
+                return NotFound();
+            }
+
+            var tournament = await _context.Tournament.FindAsync(id);
+            if (tournament == null)
+            {
+                return NotFound();
+            }
+            try
+            {
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User user = GetUser(int.Parse(validatedToken.Issuer));
+                if (tournament.Organizer == user.Name)
+                {
+                    TempData["TournamentError"] = "OwnerJoin";
+                    return RedirectToAction("Details", new { Id = id });
+                }
+                else
+                {
+                    TempData["TournamentError"] = "";
+                    if (tournament.Contestants == null)
+                    {
+                        tournament.Contestants = new List<Contestant>();
+                    }
+                    Contestant contestant = new Contestant();
+                    contestant.UserName = user.Name;
+                    contestant.TournamentName = tournament.Name;
+                    contestant.UserId = user.Id;
+                    contestant.TournamentId = tournament.Id;
+
+                    tournament.Contestants.Add(contestant);
+                    _context.Update(tournament);
+                    await _context.SaveChangesAsync();
+                    TempData["JoinStatus"] = "JoinSuccess";
+                    return RedirectToAction("Details", new { Id = id });
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Login");
+            }
+
+        }
+
         // GET: Tournaments/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -139,7 +217,25 @@ namespace PMTS.Controllers
             {
                 return NotFound();
             }
-            return View(tournament);
+            try
+            {
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User user = GetUser(int.Parse(validatedToken.Issuer));
+                if (tournament.Organizer == user.Name)
+                {
+                    return View(tournament);
+                }
+                else
+                {
+                    return RedirectToAction("Index");
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Login");
+            }
         }
 
         // POST: Tournaments/Edit/5
@@ -158,21 +254,40 @@ namespace PMTS.Controllers
             {
                 try
                 {
-                    _context.Update(tournament);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!TournamentExists(tournament.Id))
+                    string cookie = Request.Cookies["userCookie"];
+                    JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                    User user = GetUser(int.Parse(validatedToken.Issuer));
+                    if (tournament.Organizer == user.Name)
                     {
-                        return NotFound();
+                        try
+                        {
+                            _context.Update(tournament);
+                            await _context.SaveChangesAsync();
+                        }
+                        catch (DbUpdateConcurrencyException)
+                        {
+                            if (!TournamentExists(tournament.Id))
+                            {
+                                return NotFound();
+                            }
+                            else
+                            {
+                                throw;
+                            }
+                        }
+                        return RedirectToAction(nameof(Index));
                     }
                     else
                     {
-                        throw;
+                        return RedirectToAction("Index");
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                catch (Exception ex)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Login");
+                }
+                
             }
             return View(tournament);
         }

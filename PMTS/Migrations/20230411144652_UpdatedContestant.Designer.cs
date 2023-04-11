@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PMTS.Models;
@@ -11,9 +12,11 @@ using PMTS.Models;
 namespace PMTS.Migrations
 {
     [DbContext(typeof(PSQLcontext))]
-    partial class PSQLcontextModelSnapshot : ModelSnapshot
+    [Migration("20230411144652_UpdatedContestant")]
+    partial class UpdatedContestant
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -61,15 +64,12 @@ namespace PMTS.Migrations
                     b.Property<bool>("Removed")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("TournamentId")
+                    b.Property<int?>("TournamentId")
                         .HasColumnType("integer");
 
                     b.Property<string>("TournamentName")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
 
                     b.Property<string>("UserName")
                         .IsRequired()
@@ -164,9 +164,7 @@ namespace PMTS.Migrations
                 {
                     b.HasOne("PMTS.Models.Tournament", null)
                         .WithMany("Contestants")
-                        .HasForeignKey("TournamentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("TournamentId");
                 });
 
             modelBuilder.Entity("PMTS.Models.Tournament", b =>

@@ -44,24 +44,72 @@
 </div>
 <div>
     @{
+        if (TempData["TournamentError"] == "OwnerJoin")
+        {
+            <h3>Rengėjas negali prisijungti prie savo turnyro.</h3>
+        }
         if (TempData["Organizer"] == "True")
         {
             <a asp-action="Edit" asp-route-id="@Model?.Id">Redaguoti </a>
             <br />
             <a asp-action="Delete" asp-route-id="@Model?.Id">Trinti</a>
             <br />
+
+            if (TempData["RestrictedTypes"] == "True")
+            {
+                <a asp-action="AddBird" asp-route-id="@Model?.Id">Pridėti leidžiamų paukščių</a>
+                <br />
+            }
         }
         else
         {
-            <a asp-action="Join" asp-route-id="@Model?.Id">Prisijungtil</a>
-            <br />
-        }
-        if (TempData["RestrictedTypes"] == "True")
-        {
-            <a asp-action="AddBird" asp-route-id="@Model?.Id">Pridėti leidžiamų paukščių</a>
-            <br />
+            if (TempData["IsContestant"] == "False")
+            {
+                <form asp-action="Join">
+                    <input type="hidden" asp-for="Id" />
+                    <input type="submit" value="Prisijungti" class="btn btn-primary" asp-action="Join" asp-route-id="@Model?.Id" />
+                </form>
+            }
+            if (TempData["IsContestant"] == "True")
+            {
+                <p>Dalyvaujate šiame turnyre!</p>
+            }
+
         }
     }
+    
+    @{
+        if (Model.Contestants != null)
+        {
+            <h3>Dalyviai</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>
+                            Vardas
+                        </th>
+                        <th>
+                            Taškai
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Contestants)
+                    {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.UserName)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Points)
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    }
+    
         
     <a asp-action="Index">Back to List</a>
 </div>

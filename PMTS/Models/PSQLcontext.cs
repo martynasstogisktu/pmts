@@ -18,6 +18,7 @@ namespace PMTS.Models
         { }
         public DbSet<PMTS.Models.Tournament> Tournament { get; set; }
         public DbSet<PMTS.Models.Bird> Bird { get; set; } = default!;
+        public DbSet<PMTS.Models.Contestant> Contestant { get; set; } = default!;
     }
 
     public class User
