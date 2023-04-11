@@ -12,7 +12,7 @@ namespace PMTS.Models
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder.UseNpgsql("Host=localhost;Database=PMTS;Username=postgres;Password=VG$2zcF1&kLXS@JFaY");
         //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //    => optionsBuilder.UseNpgsql("builder.Configuration["DB_STRING"]");
+        //    => optionsBuilder.UseNpgsql("Environment.GetEnvironmentVariable("AzureDB")");
         public PSQLcontext(DbContextOptions<PSQLcontext> options) 
             : base(options)
         { }

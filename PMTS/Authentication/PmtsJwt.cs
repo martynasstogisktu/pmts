@@ -8,7 +8,7 @@ namespace PMTS.Authentication
     public class PmtsJwt
     {
         private string key = "6Yet9W%Hq^%g$uMT";
-        //private string key = builder.Configuration["JWT_KEY"];
+        //private string key = Environment.GetEnvironmentVariable("JWT_KEY");
         public string Create(int id)
         {
             SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
