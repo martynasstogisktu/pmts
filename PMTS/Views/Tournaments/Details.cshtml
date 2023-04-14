@@ -73,6 +73,8 @@
             if (TempData["IsContestant"] == "True")
             {
                 <p>Dalyvaujate šiame turnyre!</p>
+                <input type="hidden" asp-for="Id" />
+                <input type="button" value="Įkelti nuotrauką" class="btn btn-primary" onclick="window.location.href='@Url.Action("AddPhoto", new { Id = Model?.Id })';" />
             }
 
         }

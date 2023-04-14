@@ -1,14 +1,12 @@
 ﻿namespace PMTS.Models
 {
-    public class Contestant
+    public class Photo
     {
         public int Id { get; set; }
         public string UserName { get; set; }
         public int UserId { get; set; }
+        public int ContestantId { get; set; }
         public string TournamentName { get; set; }
         public int TournamentId { get; set; }
-        public int Points { get; set; } = 0;
-        public bool Removed { get; set; } = false; //has the user been removed from the tournament
-        public List<Photo>? Photos { get; set; }
     }
 }

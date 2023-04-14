@@ -1,0 +1,31 @@
+﻿@model PMTS.DTOs.PhotoDTO
+
+@{
+    ViewData["Title"] = "Nuotraukos įkėlimas";
+}
+
+<h4>Įkelkite nuotrauką</h4>
+<form asp-action="AddPhoto">
+    <div class="form-group">
+        <label>Image:</label>
+        <input type="file" asp-for="PhotoData" />
+    </div>
+
+    <input type="hidden" asp-for="TournamentId" />
+    <input class="btn btn-primary" type="submit" value="Įkelti" asp-action="AddPhoto" asp-route-id="@Model?.TournamentId">
+</form>
+
+<h4>Grizti</h4>
+
+@{
+    if (TempData["PhotoAdded"] == "True")
+    {
+        <h3>Nuotrauka pridėta!.</h3>
+    }
+}
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
