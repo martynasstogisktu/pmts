@@ -26,14 +26,14 @@ namespace PMTS.Controllers
     {
         private readonly PSQLcontext _context;
         private readonly PmtsJwt _pmtsJwt;
-        private readonly BlobServiceClient _blobServiceClient;
+        private readonly BlobContainerClient _blobContainerClient;
         //private readonly UsersController _usersController;
 
         public TournamentsController(PSQLcontext context, PmtsJwt pmtsJwt)
         {
             _context = context;
             _pmtsJwt = pmtsJwt;
-            _blobServiceClient = new BlobServiceClient("");
+            _blobContainerClient = new BlobServiceClient(Environment.GetEnvironmentVariable("Storage")).GetBlobContainerClient("pmts-pic");
             //_usersController = usersController;
         }
 
@@ -313,8 +313,8 @@ namespace PMTS.Controllers
                 return NotFound();
             }
 
-            try
-            {
+            //try
+            //{
                 string cookie = Request.Cookies["userCookie"];
                 JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
                 User user = GetUser(int.Parse(validatedToken.Issuer));
@@ -337,8 +337,11 @@ namespace PMTS.Controllers
                         // failai nedidesni nei 4 MB
                         if (memoryStream.Length < 4194304)
                         {
-                            using var stream = System.IO.File.Create("/img/photo" + ext);
-                            stream.Write(memoryStream.ToArray(), 0, memoryStream.ToArray().Length);
+                            //using var stream = System.IO.File.Create("A:/img/photo" + ext);
+                            //stream.Write(memoryStream.ToArray(), 0, memoryStream.ToArray().Length);
+                            BlobClient blobClient = _blobContainerClient.GetBlobClient("photo" + ext);
+                            BinaryData binaryData = new BinaryData(memoryStream.ToArray());
+                            await blobClient.UploadAsync(binaryData, true);
                             //var file = new AppFile()
                             //{
                             //    Content = memoryStream.ToArray()
@@ -352,7 +355,7 @@ namespace PMTS.Controllers
                         }
                         else
                         {
-                            ModelState.AddModelError("PhotoData", "Failo tipas netinkamas.");
+                            ModelState.AddModelError("PhotoData", "Failas per didelis.");
                             return View(id);
                         }
                     }
@@ -363,12 +366,12 @@ namespace PMTS.Controllers
                     //joks pranesimas nenurodomas, nes ikelimo puslapis neturi buti pasiekiamams naudotojams nedalyvaujantiems turnyre
                     return RedirectToAction("Details", new { Id = id });
                 }
-            }
-            catch (Exception ex)
-            {
-                TempData["AuthStatus"] = "AuthError";
-                return RedirectToAction("Login", "Users");
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    TempData["AuthStatus"] = "AuthError";
+            //    return RedirectToAction("Login", "Users");
+            //}
 
             //test code
             //string cookie = Request.Cookies["userCookie"];
