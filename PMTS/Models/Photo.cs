@@ -3,7 +3,7 @@
     public class Photo
     {
         public int Id { get; set; }
-        public string Name { get; set; } //id + file extension
+        public string Name { get; set; } = "notFound.png"; //id + file extension
         public string UserName { get; set; }
         public int UserId { get; set; }
         public int ContestantId { get; set; }

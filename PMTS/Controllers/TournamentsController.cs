@@ -19,6 +19,7 @@ using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
+using PMTS.Migrations;
 
 namespace PMTS.Controllers
 {
@@ -318,8 +319,9 @@ namespace PMTS.Controllers
                 string cookie = Request.Cookies["userCookie"];
                 JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
                 User user = GetUser(int.Parse(validatedToken.Issuer));
+                Contestant? contestant = _context.Contestant.FirstOrDefault(m => m.UserName == user.Name && m.TournamentName == tournament.Name);
 
-                if (_context.Contestant.FirstOrDefault(m => m.UserName == user.Name && m.TournamentName == tournament.Name) != null)
+                if (contestant != null)
                 {
                     string[] permittedExtensions = { ".jpg", ".jpeg", ".png", ".bmp" };
                     var ext = Path.GetExtension(photoDTO.PhotoData.FileName);
@@ -339,17 +341,31 @@ namespace PMTS.Controllers
                         {
                             //using var stream = System.IO.File.Create("A:/img/photo" + ext);
                             //stream.Write(memoryStream.ToArray(), 0, memoryStream.ToArray().Length);
-                            BlobClient blobClient = _blobContainerClient.GetBlobClient("photo" + ext);
                             BinaryData binaryData = new BinaryData(memoryStream.ToArray());
-                            await blobClient.UploadAsync(binaryData, true);
                             //var file = new AppFile()
                             //{
                             //    Content = memoryStream.ToArray()
                             //};
 
                             //_dbContext.File.Add(file);
+                            if (contestant.Photos == null)
+                            {
+                                contestant.Photos = new List<Photo>();
+                            }
+                            _context.Update(tournament);
+                            Photo photo = new Photo();
+                            photo.TournamentName = tournament.Name;
+                            photo.UserName = user.Name;
+                            photo.UserId = user.Id;
+                            photo.TournamentId = tournament.Id;
+                            photo.ContestantId = contestant.Id;
+                            contestant.Photos.Add(photo);
 
-                            //await _dbContext.SaveChangesAsync();
+                            await _context.SaveChangesAsync();
+
+                            string fileName = photo.Id.ToString() + ext;
+                            UploadBlob(fileName, binaryData); //nelaukia kol ikelimas baigiamas
+
                             TempData["PhotoAdded"] = "True";
                             return RedirectToAction("Details", new { Id = id });
                         }
@@ -422,6 +438,12 @@ namespace PMTS.Controllers
             //    //joks pranesimas nenurodomas, nes ikelimo puslapis neturi buti pasiekiamams naudotojams nedalyvaujantiems turnyre
             //    return RedirectToAction("Details", new { Id = id });
             //}
+        }
+
+        private async Task UploadBlob(string name, BinaryData binaryData)
+        {
+            BlobClient blobClient = _blobContainerClient.GetBlobClient(name);
+            await blobClient.UploadAsync(binaryData, true);
         }
 
         // GET: Tournaments/Edit/5
