@@ -104,7 +104,7 @@
                     {
                     <tr>
                         <td>
-                            @Html.DisplayFor(modelItem => item.UserName)
+                            <a asp-action="ContestantPhotos" asp-route-id="@item.Id">@Html.DisplayFor(modelItem => item.UserName)</a>
                         </td>
                         <td>
                             @Html.DisplayFor(modelItem => item.Points)

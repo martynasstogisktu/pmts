@@ -1,11 +1,7 @@
-﻿@model PMTS.Models.Contestant
-
+﻿
 @{
     ViewData["Title"] = "Nuotraukos";
 }
-
-<h1>Turnyras @Model.TournamentName</h1>
-<h2>Naudotojo @Model.UserName įkeltos nuotraukos</h2>
 
 <table class="table">
     <thead>
@@ -22,19 +18,19 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model.Photos)
-        {
+
+
             <tr>
                 <td>
-                    <img src="https://pmts.blob.core.windows.net/pmts-pic/@item.Name" alt="Nuotrauka Nr. @item.Id" />
+                    <img src="https://pmts.blob.core.windows.net/pmts-pic/1.jpg" alt="Nuotrauka Nr. 1" />
                 </td>
                 <td>
-                    @item.BirdN
+                    0
                 </td>
                 <td>
-                    @item.Points
+                    0
                 </td>
             </tr>
-        }
+
     </tbody>
 </table>

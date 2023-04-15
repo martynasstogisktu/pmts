@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PMTS.Models;
@@ -11,9 +12,11 @@ using PMTS.Models;
 namespace PMTS.Migrations
 {
     [DbContext(typeof(PSQLcontext))]
-    partial class PSQLcontextModelSnapshot : ModelSnapshot
+    [Migration("20230415210700_AddedPointsToPhotos")]
+    partial class AddedPointsToPhotos
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,7 +51,7 @@ namespace PMTS.Migrations
 
                     b.HasIndex("TournamentId");
 
-                    b.ToTable("Bird", (string)null);
+                    b.ToTable("Bird");
                 });
 
             modelBuilder.Entity("PMTS.Models.Contestant", b =>
@@ -83,7 +86,7 @@ namespace PMTS.Migrations
 
                     b.HasIndex("TournamentId");
 
-                    b.ToTable("Contestant", (string)null);
+                    b.ToTable("Contestant");
                 });
 
             modelBuilder.Entity("PMTS.Models.Photo", b =>
@@ -125,7 +128,7 @@ namespace PMTS.Migrations
 
                     b.HasIndex("ContestantId");
 
-                    b.ToTable("Photo", (string)null);
+                    b.ToTable("Photo");
                 });
 
             modelBuilder.Entity("PMTS.Models.Tournament", b =>
@@ -171,7 +174,7 @@ namespace PMTS.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Tournament", (string)null);
+                    b.ToTable("Tournament");
                 });
 
             modelBuilder.Entity("PMTS.Models.User", b =>
@@ -202,7 +205,7 @@ namespace PMTS.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("PMTS.Models.Bird", b =>

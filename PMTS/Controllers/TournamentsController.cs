@@ -97,7 +97,7 @@ namespace PMTS.Controllers
                     }
                     if (!_context.Contestant.IsNullOrEmpty())
                     {
-                        if(_context.Contestant.FirstOrDefault(m => m.UserName == user.Name && m.TournamentName == tournament.Name) != null)
+                        if(_context.Contestant.FirstOrDefault(m => m.UserId == user.Id && m.TournamentId == tournament.Id) != null)
                         {
                             TempData["IsContestant"] = "True";
                         }
@@ -136,6 +136,68 @@ namespace PMTS.Controllers
         public IActionResult Create()
         {
             return View();
+        }
+
+        // GET: Tournaments/ContestantPhotosTest
+        public async Task<IActionResult> ContestantPhotos(int? id)
+        {
+            if (id == null || _context.Contestant == null)
+            {
+                return NotFound();
+            }
+
+            var contestant = await _context.Contestant
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (contestant == null)
+            {
+                return NotFound();
+            }
+
+            var tournament = await _context.Tournament
+                .FirstOrDefaultAsync(m => m.Id == contestant.TournamentId);
+            if (tournament == null)
+            {
+                return NotFound();
+            }
+
+            _context.Contestant.Include(contestant => contestant.Photos).ToList();
+
+            if(!tournament.IsPrivate)
+            {
+                return View(contestant);
+            }
+
+            else
+            {
+                //jei privatus turnyras, perziureti galima tik prisijungus ir jame dalyvaujant
+                try
+                {
+                    if (Request.Cookies["userCookie"] != null)
+                    {
+                        string cookie = Request.Cookies["userCookie"];
+                        JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                        User user = GetUser(int.Parse(validatedToken.Issuer));
+
+                        if (_context.Contestant.FirstOrDefault(m => m.UserId == user.Id && m.TournamentId == tournament.Id) != null)
+                        {
+                            return View(contestant);
+                        }
+                        else
+                        {
+                            return RedirectToAction("Details", new { Id = tournament.Id });
+                        }
+                    }
+                    else
+                        return RedirectToAction("Details", new { Id = tournament.Id });
+                }
+                catch (Exception ex)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Login", "Users");
+                }
+            }
+
         }
 
         // POST: Tournaments/Create
@@ -364,7 +426,7 @@ namespace PMTS.Controllers
                             await _context.SaveChangesAsync();
 
                             string fileName = photo.Id.ToString() + ext;
-                            UploadBlob(fileName, binaryData); //nelaukia kol ikelimas baigiamas
+                            UploadBlob(photo.Id, fileName, binaryData); //nelaukia kol ikelimas baigiamas
 
                             TempData["PhotoAdded"] = "True";
                             return RedirectToAction("Details", new { Id = id });
@@ -440,10 +502,13 @@ namespace PMTS.Controllers
             //}
         }
 
-        private async Task UploadBlob(string name, BinaryData binaryData)
+        private async Task UploadBlob(int id, string name, BinaryData binaryData)
         {
+            var photo = await _context.Photo.FindAsync(id);
             BlobClient blobClient = _blobContainerClient.GetBlobClient(name);
-            await blobClient.UploadAsync(binaryData, true);
+            blobClient.UploadAsync(binaryData, true);
+            photo.Name = name;
+            await _context.SaveChangesAsync();
         }
 
         // GET: Tournaments/Edit/5
