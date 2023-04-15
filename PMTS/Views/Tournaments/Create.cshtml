@@ -4,53 +4,68 @@
     ViewData["Title"] = "Create";
 }
 
-<h1>Create</h1>
+<h1>Naujas turnyras</h1>
 
-<h4>Tournament</h4>
+<h4>Įveskite turnyro informaciją</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
+                <label asp-for="Name" class="control-label">Pavadinimas <em style="color:indianred;">- sukūrus turnyrą šio nustatymo keisti negalima!</em></label>
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
             <div class="form-group form-check">
                 <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsPrivate" /> @Html.DisplayNameFor(model => model.IsPrivate)
+                    <input class="form-check-input" asp-for="IsPrivate" /> Privatus turnyras
                 </label>
             </div>
             <div class="form-group form-check">
                 <label class="form-check-label">
-                    <input class="form-check-input" asp-for="RestrictedTypes" /> @Html.DisplayNameFor(model => model.RestrictedTypes)
+                    <input class="form-check-input" asp-for="RestrictedTypes" /> Ribojami paukščių tipai <em style="color:indianred;">- sukūrus turnyrą šio nustatymo keisti negalima!</em>
                 </label>
             </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="Active" /> @Html.DisplayNameFor(model => model.Active)
-                </label>
-            </div>
+            
             <div class="form-group">
-                <label asp-for="StartTime" class="control-label"></label>
+                <label id="PointsLabel" asp-for="DefaultPoints" class="control-label">Vieno paukščio taškų vertė <em style="color:indianred;">- turnyrui prasidėjus, šio nustatymo keisti negalima!</em></label>
+                <input asp-for="DefaultPoints" class="form-control" />
+                <span asp-validation-for="DefaultPoints" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="StartTime" class="control-label">Pradžia <em style="color:indianred;">- sukūrus turnyrą šio nustatymo keisti negalima!</em></label>
                 <input asp-for="StartTime" class="form-control" />
                 <span asp-validation-for="StartTime" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="EndTime" class="control-label"></label>
+                <label asp-for="EndTime" class="control-label">Pabaiga <em style="color:indianred;">- sukūrus turnyrą šio nustatymo keisti negalima!</em></label>
                 <input asp-for="EndTime" class="form-control" />
                 <span asp-validation-for="EndTime" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Pridėti" class="btn btn-primary" />
             </div>
+            <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+            <script>
+                $('#RestrictedTypes').click(function () {
+                    if (this.checked) {
+                        $('#PointsLabel').hide();
+                        $('#DefaultPoints').hide();
+                    }
+                    else {
+                        $('#PointsLabel').show();
+                        $('#DefaultPoints').show();
+                    }
+                });
+            </script>
         </form>
     </div>
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index">Turnyrų sąrašas</a>
 </div>
 
 @section Scripts {

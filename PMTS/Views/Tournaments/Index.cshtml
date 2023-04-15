@@ -6,9 +6,13 @@
 
 <h1>Vieši turnyrai</h1>
 
-<p>
-    <a asp-action="Create">Pridėti</a>
-</p>
+@if (Context.Request.Cookies["userCookie"] != null)
+{
+    <p>
+        <a asp-action="Create">Pridėti</a>
+    </p>
+}
+
 <table class="table">
     <thead>
         <tr>

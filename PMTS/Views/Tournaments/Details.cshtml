@@ -44,40 +44,44 @@
 </div>
 <div>
     @{
-        if (TempData["TournamentError"] == "OwnerJoin")
+        if (TempData["LoggedIn"] == "True")
         {
-            <h3>Rengėjas negali prisijungti prie savo turnyro.</h3>
-        }
-        if (TempData["Organizer"] == "True")
-        {
-            <a asp-action="Edit" asp-route-id="@Model?.Id">Redaguoti </a>
-            <br />
-            <a asp-action="Delete" asp-route-id="@Model?.Id">Trinti</a>
-            <br />
-
-            if (TempData["RestrictedTypes"] == "True")
+            if (TempData["TournamentError"] == "OwnerJoin")
             {
-                <a asp-action="AddBird" asp-route-id="@Model?.Id">Pridėti leidžiamų paukščių</a>
+                <h3>Rengėjas negali prisijungti prie savo turnyro.</h3>
+            }
+            if (TempData["Organizer"] == "True")
+            {
+                <a asp-action="Edit" asp-route-id="@Model?.Id">Redaguoti </a>
                 <br />
-            }
-        }
-        else
-        {
-            if (TempData["IsContestant"] == "False")
-            {
-                <form asp-action="Join">
-                    <input type="hidden" asp-for="Id" />
-                    <input type="submit" value="Prisijungti" class="btn btn-primary" asp-action="Join" asp-route-id="@Model?.Id" />
-                </form>
-            }
-            if (TempData["IsContestant"] == "True")
-            {
-                <p>Dalyvaujate šiame turnyre!</p>
-                <input type="hidden" asp-for="Id" />
-                <input type="button" value="Įkelti nuotrauką" class="btn btn-primary" onclick="window.location.href='@Url.Action("AddPhoto", new { Id = Model?.Id })';" />
-            }
+                <a asp-action="Delete" asp-route-id="@Model?.Id">Trinti</a>
+                <br />
 
+                if (TempData["RestrictedTypes"] == "True")
+                {
+                    <a asp-action="AddBird" asp-route-id="@Model?.Id">Pridėti leidžiamų paukščių</a>
+                    <br />
+                }
+            }
+            else
+            {
+                if (TempData["IsContestant"] == "False")
+                {
+                    <form asp-action="Join">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="submit" value="Prisijungti" class="btn btn-primary" asp-action="Join" asp-route-id="@Model?.Id" />
+                    </form>
+                }
+                if (TempData["IsContestant"] == "True")
+                {
+                    <p>Dalyvaujate šiame turnyre!</p>
+                    <input type="hidden" asp-for="Id" />
+                    <input type="button" value="Įkelti nuotrauką" class="btn btn-primary" onclick="window.location.href='@Url.Action("AddPhoto", new { Id = Model?.Id })';" />
+                }
+
+            }
         }
+        
     }
     
     @{

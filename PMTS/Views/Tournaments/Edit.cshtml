@@ -13,36 +13,25 @@
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
             <div class="form-group form-check">
                 <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsPrivate" /> @Html.DisplayNameFor(model => model.IsPrivate)
+                    <input class="form-check-input" asp-for="IsPrivate" /> Privatus turnyras
                 </label>
             </div>
+            
             <div class="form-group form-check">
                 <label class="form-check-label">
-                    <input class="form-check-input" asp-for="RestrictedTypes" /> @Html.DisplayNameFor(model => model.RestrictedTypes)
+                    <input class="form-check-input" asp-for="Active" /> Turnyras aktyvus <em style="color:indianred;">- turnyrui esant neaktyviam, jo informacijos keisti nebegalima!</em>
                 </label>
             </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="Active" /> @Html.DisplayNameFor(model => model.Active)
-                </label>
-            </div>
-            <div class="form-group">
-                <label asp-for="StartTime" class="control-label"></label>
-                <input asp-for="StartTime" class="form-control" />
-                <span asp-validation-for="StartTime" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="EndTime" class="control-label"></label>
-                <input asp-for="EndTime" class="form-control" />
-                <span asp-validation-for="EndTime" class="text-danger"></span>
-            </div>
+            @if(!Model.RestrictedTypes)
+            {
+                <div class="form-group">
+                    <label id="PointsLabel" asp-for="DefaultPoints" class="control-label">Vieno paukščio taškų vertė <em style="color:indianred;">- turnyrui prasidėjus, šio nustatymo keisti negalima!</em></label>
+                    <input asp-for="DefaultPoints" class="form-control" />
+                    <span asp-validation-for="DefaultPoints" class="text-danger"></span>
+                </div>
+            }
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>

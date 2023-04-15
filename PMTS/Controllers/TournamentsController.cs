@@ -15,6 +15,10 @@ using PMTS.DTOs;
 using PMTS.Models;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using Azure.Identity;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
 
 namespace PMTS.Controllers
 {
@@ -22,12 +26,14 @@ namespace PMTS.Controllers
     {
         private readonly PSQLcontext _context;
         private readonly PmtsJwt _pmtsJwt;
+        private readonly BlobServiceClient _blobServiceClient;
         //private readonly UsersController _usersController;
 
         public TournamentsController(PSQLcontext context, PmtsJwt pmtsJwt)
         {
             _context = context;
             _pmtsJwt = pmtsJwt;
+            _blobServiceClient = new BlobServiceClient("");
             //_usersController = usersController;
         }
 
@@ -55,6 +61,23 @@ namespace PMTS.Controllers
             {
                 return NotFound();
             }
+            //jei turnyras prasidejo
+            if (tournament.Active && tournament.StartTime.ToUniversalTime() < DateTime.Now.ToUniversalTime())
+            {
+                tournament.Ongoing = true;
+            }
+            else
+                tournament.Ongoing = false;
+            //jei turnyras baigesi
+            if (tournament.EndTime.ToUniversalTime() > DateTime.Now.ToUniversalTime())
+            {
+                tournament.Active = false;
+                tournament.Ongoing = false;
+            }
+            //Ongoing = true - turnyre galima dalyvauti
+            //Ongoing = false - turnyre negalima dalyvauti (bagesi arba buvo nutrauktas)
+            
+
             try
             {
                 if (Request.Cookies["userCookie"] != null)
@@ -62,6 +85,7 @@ namespace PMTS.Controllers
                     string cookie = Request.Cookies["userCookie"];
                     JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
                     User user = GetUser(int.Parse(validatedToken.Issuer));
+                    TempData["LoggedIn"] = "True";
                     if (tournament.Organizer == user.Name)
                     {
                         TempData["Organizer"] = "True";
@@ -86,10 +110,15 @@ namespace PMTS.Controllers
                         TempData["IsContestant"] = "False";
                     }
                 }
+                else
+                {
+                    TempData["LoggedIn"] = "False";
+                }
             }
             catch (Exception ex)
             {
-                //prisijungimas neprivalomas, tad įvykus autentifikacijos klaidai nieko nedaroma
+                //prisijungimas neprivalomas, tad įvykus autentifikacijos nenukreipiama i prisijungima
+                TempData["LoggedIn"] = "False";
             }
             if(tournament.RestrictedTypes)
             {
@@ -142,7 +171,7 @@ namespace PMTS.Controllers
                     user.Tournaments.Add(tournament);
                     _context.Update(user);
                     await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction("Details", new { Id = tournament.Id });
                 }
                 return View(tournament);
             }
@@ -284,112 +313,112 @@ namespace PMTS.Controllers
                 return NotFound();
             }
 
-            //try
-            //{
-            //    string cookie = Request.Cookies["userCookie"];
-            //    JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
-            //    User user = GetUser(int.Parse(validatedToken.Issuer));
-
-            //    if (_context.Contestant.FirstOrDefault(m => m.UserName == user.Name && m.TournamentName == tournament.Name) != null)
-            //    {
-            //        //string[] permittedExtensions = { ".jpg", ".jpeg", ".png", ".bmp" };
-            //        //var ext = Path.GetExtension(photoDTO.PhotoData.FileName);
-            //        //if (string.IsNullOrEmpty(ext) || !permittedExtensions.Contains(ext))
-            //        //{
-            //        //    ModelState.AddModelError("PhotoData", "Failo tipas netinkamas.");
-            //        //    return View(id);
-            //        //}
-
-            //        //jei naudotojas yra turnyro dalyvis
-            //        using (var memoryStream = new MemoryStream())
-            //        {
-            //            await photoDTO.PhotoData.CopyToAsync(memoryStream);
-
-            //            // failai nedidesni nei 4 MB
-            //            if (memoryStream.Length < 4194304)
-            //            {
-            //                using var stream = System.IO.File.Create("/img/photo." + ext);
-            //                stream.Write(memoryStream.ToArray(), 0, memoryStream.ToArray().Length);
-            //                //var file = new AppFile()
-            //                //{
-            //                //    Content = memoryStream.ToArray()
-            //                //};
-
-            //                //_dbContext.File.Add(file);
-
-            //                //await _dbContext.SaveChangesAsync();
-            //                TempData["PhotoAdded"] = "True";
-            //                return RedirectToAction("Details", new { Id = id });
-            //            }
-            //            else
-            //            {
-            //                ModelState.AddModelError("PhotoData", "Failo tipas netinkamas.");
-            //                return View(id);
-            //            }
-            //        }
-            //    }
-            //    else
-            //    {
-            //        //jei ne dalyvis, grazina i turnyro aprasyma
-            //        //joks pranesimas nenurodomas, nes ikelimo puslapis neturi buti pasiekiamams naudotojams nedalyvaujantiems turnyre
-            //        return RedirectToAction("Details", new { Id = id });
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    TempData["AuthStatus"] = "AuthError";
-            //    return RedirectToAction("Login", "Users");
-            //}
-
-            //test code
-            string cookie = Request.Cookies["userCookie"];
-            JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
-            User user = GetUser(int.Parse(validatedToken.Issuer));
-
-            if (_context.Contestant.FirstOrDefault(m => m.UserName == user.Name && m.TournamentName == tournament.Name) != null)
+            try
             {
-                string[] permittedExtensions = { ".jpg", ".jpeg", ".png", ".bmp" };
-                var ext = Path.GetExtension(photoDTO.PhotoData.FileName);
-                if (string.IsNullOrEmpty(ext) || !permittedExtensions.Contains(ext))
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User user = GetUser(int.Parse(validatedToken.Issuer));
+
+                if (_context.Contestant.FirstOrDefault(m => m.UserName == user.Name && m.TournamentName == tournament.Name) != null)
                 {
-                    ModelState.AddModelError("PhotoData", "Failo tipas netinkamas.");
-                    return View(id);
-                }
-
-                //jei naudotojas yra turnyro dalyvis
-                using (var memoryStream = new MemoryStream())
-                {
-                    await photoDTO.PhotoData.CopyToAsync(memoryStream);
-
-                    // failai nedidesni nei 4 MB
-                    if (memoryStream.Length < 4194304)
-                    {
-                        using var stream = System.IO.File.Create("A:/img/photo" + ext);
-                        stream.Write(memoryStream.ToArray(), 0, memoryStream.ToArray().Length);
-                        //var file = new AppFile()
-                        //{
-                        //    Content = memoryStream.ToArray()
-                        //};
-
-                        //_dbContext.File.Add(file);
-
-                        //await _dbContext.SaveChangesAsync();
-                        TempData["PhotoAdded"] = "True";
-                        return RedirectToAction("Details", new { Id = id });
-                    }
-                    else
+                    string[] permittedExtensions = { ".jpg", ".jpeg", ".png", ".bmp" };
+                    var ext = Path.GetExtension(photoDTO.PhotoData.FileName);
+                    if (string.IsNullOrEmpty(ext) || !permittedExtensions.Contains(ext))
                     {
                         ModelState.AddModelError("PhotoData", "Failo tipas netinkamas.");
                         return View(id);
                     }
+
+                    //jei naudotojas yra turnyro dalyvis
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        await photoDTO.PhotoData.CopyToAsync(memoryStream);
+
+                        // failai nedidesni nei 4 MB
+                        if (memoryStream.Length < 4194304)
+                        {
+                            using var stream = System.IO.File.Create("/img/photo" + ext);
+                            stream.Write(memoryStream.ToArray(), 0, memoryStream.ToArray().Length);
+                            //var file = new AppFile()
+                            //{
+                            //    Content = memoryStream.ToArray()
+                            //};
+
+                            //_dbContext.File.Add(file);
+
+                            //await _dbContext.SaveChangesAsync();
+                            TempData["PhotoAdded"] = "True";
+                            return RedirectToAction("Details", new { Id = id });
+                        }
+                        else
+                        {
+                            ModelState.AddModelError("PhotoData", "Failo tipas netinkamas.");
+                            return View(id);
+                        }
+                    }
+                }
+                else
+                {
+                    //jei ne dalyvis, grazina i turnyro aprasyma
+                    //joks pranesimas nenurodomas, nes ikelimo puslapis neturi buti pasiekiamams naudotojams nedalyvaujantiems turnyre
+                    return RedirectToAction("Details", new { Id = id });
                 }
             }
-            else
+            catch (Exception ex)
             {
-                //jei ne dalyvis, grazina i turnyro aprasyma
-                //joks pranesimas nenurodomas, nes ikelimo puslapis neturi buti pasiekiamams naudotojams nedalyvaujantiems turnyre
-                return RedirectToAction("Details", new { Id = id });
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Login", "Users");
             }
+
+            //test code
+            //string cookie = Request.Cookies["userCookie"];
+            //JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+            //User user = GetUser(int.Parse(validatedToken.Issuer));
+
+            //if (_context.Contestant.FirstOrDefault(m => m.UserName == user.Name && m.TournamentName == tournament.Name) != null)
+            //{
+            //    string[] permittedExtensions = { ".jpg", ".jpeg", ".png", ".bmp" };
+            //    var ext = Path.GetExtension(photoDTO.PhotoData.FileName);
+            //    if (string.IsNullOrEmpty(ext) || !permittedExtensions.Contains(ext))
+            //    {
+            //        ModelState.AddModelError("PhotoData", "Failo tipas netinkamas.");
+            //        return View(id);
+            //    }
+
+            //    //jei naudotojas yra turnyro dalyvis
+            //    using (var memoryStream = new MemoryStream())
+            //    {
+            //        await photoDTO.PhotoData.CopyToAsync(memoryStream);
+
+            //        // failai nedidesni nei 4 MB
+            //        if (memoryStream.Length < 4194304)
+            //        {
+            //            using var stream = System.IO.File.Create("A:/img/photo" + ext);
+            //            stream.Write(memoryStream.ToArray(), 0, memoryStream.ToArray().Length);
+            //            //var file = new AppFile()
+            //            //{
+            //            //    Content = memoryStream.ToArray()
+            //            //};
+
+            //            //_dbContext.File.Add(file);
+
+            //            //await _dbContext.SaveChangesAsync();
+            //            TempData["PhotoAdded"] = "True";
+            //            return RedirectToAction("Details", new { Id = id });
+            //        }
+            //        else
+            //        {
+            //            ModelState.AddModelError("PhotoData", "Failo tipas netinkamas.");
+            //            return View(id);
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    //jei ne dalyvis, grazina i turnyro aprasyma
+            //    //joks pranesimas nenurodomas, nes ikelimo puslapis neturi buti pasiekiamams naudotojams nedalyvaujantiems turnyre
+            //    return RedirectToAction("Details", new { Id = id });
+            //}
         }
 
         // GET: Tournaments/Edit/5
