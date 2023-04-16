@@ -10,6 +10,11 @@
     <div>
     <input type = "file" asp-for="PhotoData"/>
     </div>
+    <div class="form-group">
+        <label asp-for="BirdsN" class="control-label"></label>
+        <input asp-for="BirdsN" class="form-control" />
+        <span asp-validation-for="BirdsN" class="text-danger"></span>
+    </div>
 
     <div>
     <input type="submit" value="Įkelti" class="btn btn-primary" />

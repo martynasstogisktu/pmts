@@ -7,34 +7,50 @@
 <h1>Turnyras @Model.TournamentName</h1>
 <h2>Naudotojo @Model.UserName įkeltos nuotraukos</h2>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                Nuotrauka
-            </th>
-            <th>
-                Paukščių kiekis nuotraukoje
-            </th>
-            <th>
-                Bendras nuotraukos taškų kiekis
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model.Photos)
-        {
-            <tr>
-                <td>
-                    <img src="https://pmts.blob.core.windows.net/pmts-pic/@item.Name" alt="Nuotrauka Nr. @item.Id" />
-                </td>
-                <td>
-                    @item.BirdN
-                </td>
-                <td>
-                    @item.Points
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+@{
+    if (Model.Photos != null)
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        Nuotrauka
+                    </th>
+                    <th>
+                        Paukščių kiekis nuotraukoje
+                    </th>
+                    <th>
+                        Bendras nuotraukos taškų kiekis
+                    </th>
+                    <th>
+                        Ar aptiktas paukštis
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Photos)
+                {
+                    <tr>
+                        <td>
+                            <img src="https://pmts.blob.core.windows.net/pmts-pic/@item.Name" alt="Nuotrauka Nr. @item.Id" />
+                        </td>
+                        <td>
+                            @item.BirdN
+                        </td>
+                        <td>
+                            @item.Points
+                        </td>
+                        <td>
+                            @item.BirdDetected
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <h3>Nėra įkeltų nuotraukų</h3>
+    }
+}
+

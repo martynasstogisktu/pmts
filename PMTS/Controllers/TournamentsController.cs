@@ -19,7 +19,10 @@ using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
+using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
+using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
 using PMTS.Migrations;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace PMTS.Controllers
 {
@@ -392,9 +395,14 @@ namespace PMTS.Controllers
                         ModelState.AddModelError("PhotoData", "Failo tipas netinkamas.");
                         return View(id);
                     }
+                    if (photoDTO.BirdsN <= 0)
+                    {
+                        ModelState.AddModelError("BirdsN", "Paukščių skaičius turi būti teigiamas skaičius.");
+                        return View(id);
+                    }
 
-                    //jei naudotojas yra turnyro dalyvis
-                    using (var memoryStream = new MemoryStream())
+                //jei naudotojas yra turnyro dalyvis
+                using (var memoryStream = new MemoryStream())
                     {
                         await photoDTO.PhotoData.CopyToAsync(memoryStream);
 
@@ -416,17 +424,16 @@ namespace PMTS.Controllers
                             }
                             _context.Update(tournament);
                             Photo photo = new Photo();
-                            photo.TournamentName = tournament.Name;
-                            photo.UserName = user.Name;
-                            photo.UserId = user.Id;
                             photo.TournamentId = tournament.Id;
                             photo.ContestantId = contestant.Id;
+                            photo.BirdN = photoDTO.BirdsN;
+                            photo.Points = tournament.DefaultPoints * photo.BirdN;
                             contestant.Photos.Add(photo);
 
                             await _context.SaveChangesAsync();
 
                             string fileName = photo.Id.ToString() + ext;
-                            UploadBlob(photo.Id, fileName, binaryData); //nelaukia kol ikelimas baigiamas
+                            await UploadBlob(photo.Id, fileName, binaryData); //nelaukia kol ikelimas baigiamas
 
                             TempData["PhotoAdded"] = "True";
                             return RedirectToAction("Details", new { Id = id });
@@ -506,9 +513,45 @@ namespace PMTS.Controllers
         {
             var photo = await _context.Photo.FindAsync(id);
             BlobClient blobClient = _blobContainerClient.GetBlobClient(name);
-            blobClient.UploadAsync(binaryData, true);
+            await blobClient.UploadAsync(binaryData, true);
             photo.Name = name;
-            await _context.SaveChangesAsync();
+
+            DetectResult detectResult = await AnalyzeImage(name);
+            int detectBirds = 0; //number of birds found in photo
+            foreach (var obj in detectResult.Objects)
+            {
+                if (obj.ObjectProperty.Equals("bird"))
+                {
+                    detectBirds++;
+                    photo.BirdDetected = true;
+                }
+            }
+
+
+            
+            if (detectBirds == photo.BirdN)
+            {
+                var contestant = await _context.Contestant.FindAsync(photo.ContestantId);
+                contestant.Points += photo.Points;
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                //jei nesutampa nurodytu pauksciu skaicius su surastu, nuotrauka pazymima patikrai
+                photo.BirdDetected = false;
+            }
+        }
+
+        public static async Task<DetectResult> AnalyzeImage(string name)
+        {
+            ComputerVisionClient client =
+              new ComputerVisionClient(new ApiKeyServiceClientCredentials(Environment.GetEnvironmentVariable("VisionKey")))
+              { Endpoint = Environment.GetEnvironmentVariable("VisionEndpoint") };
+
+            DetectResult detectResult = await client.DetectObjectsAsync("https://pmts.blob.core.windows.net/pmts-pic/" + name);
+
+
+            return detectResult;
         }
 
         // GET: Tournaments/Edit/5
