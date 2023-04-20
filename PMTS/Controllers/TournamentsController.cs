@@ -216,16 +216,16 @@ namespace PMTS.Controllers
                 JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
                 User user = GetUser(int.Parse(validatedToken.Issuer));
                 tournament.Organizer = user.Name;
-                if (!ModelState.IsValid)
-                {
-                    foreach (var modelState in ViewData.ModelState.Values)
-                    {
-                        foreach (ModelError error in modelState.Errors)
-                        {
-                            Console.WriteLine(error.ErrorMessage);
-                        }
-                    }
-                }
+                //if (!ModelState.IsValid)
+                //{
+                //    foreach (var modelState in ViewData.ModelState.Values)
+                //    {
+                //        foreach (ModelError error in modelState.Errors)
+                //        {
+                //            Console.WriteLine(error.ErrorMessage);
+                //        }
+                //    }
+                //}
                 if (ModelState.IsValid)
                 {
                     tournament.StartTime = tournament.StartTime.ToUniversalTime();
