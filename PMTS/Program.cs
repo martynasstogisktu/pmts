@@ -13,8 +13,7 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped<PmtsJwt>();
 
-builder.Services.AddDbContext<PSQLcontext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("PSQLcontext")));
-//builder.Services.AddDbContext<PSQLcontext>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("AzureDB")));
+builder.Services.AddDbContext<PSQLcontext>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("AzureDB")));
 
 var app = builder.Build();
 
