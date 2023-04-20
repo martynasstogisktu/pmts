@@ -37,6 +37,10 @@
 {
     <h2>Prisijungimas nepavyko</h2>
     <p>Bandykite dar kartą</p>
+    <p>@TempData["login"]</p>
+    <p>@TempData["user"]</p>
+    <p>@TempData["crypt"]</p>
+    <p>@TempData["test"]</p>
 }
 
 @if (TempData["AuthStatus"] == "AuthError")

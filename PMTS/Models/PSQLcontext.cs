@@ -20,6 +20,12 @@ namespace PMTS.Models
         public DbSet<PMTS.Models.Bird> Bird { get; set; } = default!;
         public DbSet<PMTS.Models.Contestant> Contestant { get; set; } = default!;
         public DbSet<PMTS.Models.Photo> Photo { get; set; } = default!;
+        public DbSet<Helper> Helper { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Helper>().HasNoKey();
+        }
     }
 
     public class User

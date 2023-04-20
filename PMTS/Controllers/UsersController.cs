@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using PMTS.Authentication;
 using PMTS.DTOs;
 using PMTS.Models;
@@ -80,6 +83,7 @@ namespace PMTS.Controllers
             }
             //psql for salt: UPDATE public."Users" Set "Password" = crypt('slaptazodis123', gen_salt('bf')) WHERE public."Users"."Id" = 1;
             user.Admin = false;
+            //user.Password = _context.Helper.FromSql($"SELECT crypt('{user.Password}', gen_salt('bf', 8));").ToList().FirstOrDefault().crypt;
             _context.Add(user);
             await _context.SaveChangesAsync();
             TempData["RegisterStatus"] = "RegisterSuccess";
@@ -100,18 +104,30 @@ namespace PMTS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginDTO login)
         {
-            User user = GetUser(login.Name); 
+            User user = GetUser(login.Name);
             if (user == null)
             {
                 ModelState.AddModelError("Name", "Naudotojas nurodytu vardu nerastas.");
                 TempData["LoginStatus"] = "LoginFailed";
             }
-
-            if (user.Password != login.Password)
+            else
             {
-                ModelState.AddModelError("Password", "Slaptažodis neteisingas.");
-                TempData["LoginStatus"] = "LoginFailed";
-            }
+                //Helper helper = _context.Helper.FromSql($"SELECT crypt('{login.Password}', '{user.Password}');").FirstOrDefault();
+                //if (helper.crypt != user.Password)
+                //{
+                //    ModelState.AddModelError("Password", "Slaptažodis neteisingas.");
+                //    TempData["LoginStatus"] = "LoginFailed";
+                //    TempData["login"] = login.Password;
+                //    TempData["user"] = user.Password;
+                //    TempData["crypt"] = helper.crypt;
+                //    TempData["test"] = "hello";
+                //}
+                if (user.Password != login.Password)
+                {
+                    ModelState.AddModelError("Password", "Slaptažodis neteisingas.");
+                    TempData["LoginStatus"] = "LoginFailed";
+                }
+            } 
 
             if (!ModelState.IsValid)
             {
