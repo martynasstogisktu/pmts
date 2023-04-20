@@ -526,20 +526,18 @@ namespace PMTS.Controllers
                     photo.BirdDetected = true;
                 }
             }
-
-
-            
+                        
             if (detectBirds == photo.BirdN)
             {
                 var contestant = await _context.Contestant.FindAsync(photo.ContestantId);
                 contestant.Points += photo.Points;
-                await _context.SaveChangesAsync();
             }
             else
             {
                 //jei nesutampa nurodytu pauksciu skaicius su surastu, nuotrauka pazymima patikrai
                 photo.BirdDetected = false;
             }
+            await _context.SaveChangesAsync();
         }
 
         public static async Task<DetectResult> AnalyzeImage(string name)
