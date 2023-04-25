@@ -9,8 +9,10 @@ namespace PMTS.Models
     public class PSQLcontext : DbContext
     {
         public DbSet<User> Users { get; set; }
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //    => optionsBuilder.UseNpgsql(Environment.GetEnvironmentVariable("AzureDB"));
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder.UseNpgsql(Environment.GetEnvironmentVariable("AzureDB"));
+            => optionsBuilder.UseNpgsql("Host=localhost;Database=PMTS;Username=postgres;Password=VG$2zcF1&kLXS@JFaY");
         public PSQLcontext(DbContextOptions<PSQLcontext> options) 
             : base(options)
         { }

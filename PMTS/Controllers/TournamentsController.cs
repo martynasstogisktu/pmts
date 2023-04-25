@@ -433,7 +433,9 @@ namespace PMTS.Controllers
                             await _context.SaveChangesAsync();
 
                             string fileName = photo.Id.ToString() + ext;
-                            await UploadBlob(photo.Id, fileName, binaryData); //nelaukia kol ikelimas baigiamas
+                            string thumbFileName = photo.Id.ToString() + "_thumb" + ext;
+
+                            await UploadBlob(photo.Id, fileName, thumbFileName, binaryData); //nelaukia kol ikelimas baigiamas
 
                             TempData["PhotoAdded"] = "True";
                             return RedirectToAction("Details", new { Id = id });
@@ -509,14 +511,15 @@ namespace PMTS.Controllers
             //}
         }
 
-        private async Task UploadBlob(int id, string name, BinaryData binaryData)
+        private async Task UploadBlob(int id, string name, string thumbName, BinaryData binaryData)
         {
             var photo = await _context.Photo.FindAsync(id);
             BlobClient blobClient = _blobContainerClient.GetBlobClient(name);
             await blobClient.UploadAsync(binaryData, true);
             photo.Name = name;
+            photo.ThumbName = thumbName;
 
-            DetectResult detectResult = await AnalyzeImage(name);
+            DetectResult detectResult = await AnalyzeImage(name, thumbName);
             int detectBirds = 0; //number of birds found in photo
             foreach (var obj in detectResult.Objects)
             {
@@ -531,16 +534,18 @@ namespace PMTS.Controllers
             {
                 var contestant = await _context.Contestant.FindAsync(photo.ContestantId);
                 contestant.Points += photo.Points;
+                _context.Contestant.Update(contestant);
             }
             else
             {
                 //jei nesutampa nurodytu pauksciu skaicius su surastu, nuotrauka pazymima patikrai
                 photo.BirdDetected = false;
             }
+            _context.Photo.Update(photo);
             await _context.SaveChangesAsync();
         }
 
-        public static async Task<DetectResult> AnalyzeImage(string name)
+        private async Task<DetectResult> AnalyzeImage(string name, string thumbName)
         {
             ComputerVisionClient client =
               new ComputerVisionClient(new ApiKeyServiceClientCredentials(Environment.GetEnvironmentVariable("VisionKey")))
@@ -548,8 +553,33 @@ namespace PMTS.Controllers
 
             DetectResult detectResult = await client.DetectObjectsAsync("https://pmts.blob.core.windows.net/pmts-pic/" + name);
 
+            Stream stream = await client.GenerateThumbnailAsync(300, 300, "https://pmts.blob.core.windows.net/pmts-pic/" + name, true);
+
+            BlobClient blobClient = _blobContainerClient.GetBlobClient(thumbName);
+            await blobClient.UploadAsync(stream, true);
+
 
             return detectResult;
+        }
+
+        // GET: Tournaments/Photo/5
+        public async Task<IActionResult> Photo(int? id)
+        {
+
+            if (id == null || _context.Photo == null)
+            {
+                return NotFound();
+            }
+
+            var photo = await _context.Photo
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (photo == null)
+            {
+                return NotFound();
+            }
+
+            return View(photo);
         }
 
         // GET: Tournaments/Edit/5

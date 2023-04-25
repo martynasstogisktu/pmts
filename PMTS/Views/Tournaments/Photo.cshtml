@@ -1,0 +1,11 @@
+﻿@model PMTS.Models.Photo
+
+@{
+    ViewData["Title"] = "Nuotrauka";
+}
+
+<h2>Nuotrauka Nr. @Model.Id</h2>
+
+<img src="https://pmts.blob.core.windows.net/pmts-pic/@Model.Name" alt="Nuotrauka Nr. @Model.Id" />
+
+

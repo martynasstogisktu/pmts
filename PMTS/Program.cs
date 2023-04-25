@@ -13,7 +13,8 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped<PmtsJwt>();
 
-builder.Services.AddDbContext<PSQLcontext>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("AzureDB")));
+//builder.Services.AddDbContext<PSQLcontext>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("AzureDB")));
+builder.Services.AddDbContext<PSQLcontext>(options => options.UseNpgsql("Host=localhost;Database=PMTS;Username=postgres;Password=VG$2zcF1&kLXS@JFaY"));
 
 var app = builder.Build();
 

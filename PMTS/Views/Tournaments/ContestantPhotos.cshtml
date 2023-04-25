@@ -32,7 +32,9 @@
                 {
                     <tr>
                         <td>
-                            <img src="https://pmts.blob.core.windows.net/pmts-pic/@item.Name" alt="Nuotrauka Nr. @item.Id" />
+                            <a asp-action="Photo" asp-route-id="@item.Id">
+                                <img src="https://pmts.blob.core.windows.net/pmts-pic/@item.ThumbName" alt="Nuotrauka Nr. @item.Id" />
+                            </a>
                         </td>
                         <td>
                             @item.BirdN
