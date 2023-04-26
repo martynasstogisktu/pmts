@@ -81,9 +81,8 @@ namespace PMTS.Controllers
                 //return RedirectToAction(nameof(Index));
                 return View();
             }
-            //psql for salt: UPDATE public."Users" Set "Password" = crypt('slaptazodis123', gen_salt('bf')) WHERE public."Users"."Id" = 1;
             user.Admin = false;
-            //user.Password = _context.Helper.FromSql($"SELECT crypt('{user.Password}', gen_salt('bf', 8));").ToList().FirstOrDefault().crypt;
+            user.Password = _context.Helper.FromSql($"SELECT crypt({user.Password}, gen_salt('bf', 8));").ToList().FirstOrDefault().crypt;
             _context.Add(user);
             await _context.SaveChangesAsync();
             TempData["RegisterStatus"] = "RegisterSuccess";
@@ -112,21 +111,21 @@ namespace PMTS.Controllers
             }
             else
             {
-                //Helper helper = _context.Helper.FromSql($"SELECT crypt('{login.Password}', '{user.Password}');").FirstOrDefault();
-                //if (helper.crypt != user.Password)
-                //{
-                //    ModelState.AddModelError("Password", "Slaptažodis neteisingas.");
-                //    TempData["LoginStatus"] = "LoginFailed";
-                //    TempData["login"] = login.Password;
-                //    TempData["user"] = user.Password;
-                //    TempData["crypt"] = helper.crypt;
-                //    TempData["test"] = "hello";
-                //}
-                if (user.Password != login.Password)
+                string helper = _context.Helper.FromSql($"SELECT crypt({login.Password}, {user.Password});").ToList().FirstOrDefault().crypt;
+                if (helper != user.Password)
                 {
                     ModelState.AddModelError("Password", "Slaptažodis neteisingas.");
                     TempData["LoginStatus"] = "LoginFailed";
+                    TempData["login"] = login.Password;
+                    TempData["user"] = user.Password;
+                    TempData["crypt"] = helper;
+                    TempData["test"] = "hello1";
                 }
+                //if (user.Password != login.Password)
+                //{
+                //    ModelState.AddModelError("Password", "Slaptažodis neteisingas.");
+                //    TempData["LoginStatus"] = "LoginFailed";
+                //}
             } 
 
             if (!ModelState.IsValid)
