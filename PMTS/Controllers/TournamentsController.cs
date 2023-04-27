@@ -107,7 +107,8 @@ namespace PMTS.Controllers
             }
             //Ongoing = true - turnyre galima dalyvauti
             //Ongoing = false - turnyre negalima dalyvauti (bagesi arba buvo nutrauktas)
-            
+
+            _context.Tournament.Include(tournament => tournament.Contestants).ToList();
 
             try
             {
@@ -209,7 +210,7 @@ namespace PMTS.Controllers
                         JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
                         User user = GetUser(int.Parse(validatedToken.Issuer));
 
-                        if (_context.Contestant.FirstOrDefault(m => m.UserId == user.Id && m.TournamentId == tournament.Id) != null)
+                        if ((_context.Contestant.FirstOrDefault(m => m.UserId == user.Id && m.TournamentId == tournament.Id) != null) || tournament.UserId == user.Id)
                         {
                             return View(contestant);
                         }
@@ -340,15 +341,9 @@ namespace PMTS.Controllers
             }
 
             var tournament = await _context.Tournament.FindAsync(id);
-            var newContestant = _context.Users.FirstOrDefault(e => e.Name == addUserDTO.Name);
             if (tournament == null)
             {
                 return NotFound();
-            }
-            if (newContestant == null)
-            {
-                TempData["AddStatus"] = "AddFailed";
-                return RedirectToAction("AddUserToTournament", new { Id = id });
             }
             try
             {
@@ -361,21 +356,7 @@ namespace PMTS.Controllers
                 }
                 else
                 {
-                    if (tournament.Contestants == null)
-                    {
-                        tournament.Contestants = new List<Contestant>();
-                    }
-                    Contestant contestant = new Contestant();
-                    contestant.UserName = newContestant.Name;
-                    contestant.TournamentName = newContestant.Name;
-                    contestant.UserId = newContestant.Id;
-                    contestant.TournamentId = newContestant.Id;
-
-                    tournament.Contestants.Add(contestant);
-                    _context.Update(tournament);
-                    await _context.SaveChangesAsync();
-                    TempData["AddStatus"] = "AddSuccess";
-                    return RedirectToAction("AddUserToTournament", new { Id = id });
+                    return View();
                 }
             }
             catch (Exception ex)
@@ -405,7 +386,7 @@ namespace PMTS.Controllers
             if (newContestant == null)
             {
                 TempData["AddStatus"] = "AddFailed";
-                return RedirectToAction("AddUserToTournament", new { Id = id });
+                return View();
             }
             try
             {
@@ -424,7 +405,7 @@ namespace PMTS.Controllers
                     }
                     Contestant contestant = new Contestant();
                     contestant.UserName = newContestant.Name;
-                    contestant.TournamentName = newContestant.Name;
+                    contestant.TournamentName = tournament.Name;
                     contestant.UserId = newContestant.Id;
                     contestant.TournamentId = newContestant.Id;
 
@@ -432,7 +413,7 @@ namespace PMTS.Controllers
                     _context.Update(tournament);
                     await _context.SaveChangesAsync();
                     TempData["AddStatus"] = "AddSuccess";
-                    return RedirectToAction("AddUserToTournament", new { Id = id });
+                    return View();
                 }
             }
             catch (Exception ex)
