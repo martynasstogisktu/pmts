@@ -1,0 +1,47 @@
+﻿@addTagHelper*, Microsoft.AspNetCore.Mvc.TagHelpers
+@model PMTS.DTOs.AddUserDTO
+
+@{
+    ViewData["Title"] = "Naudotojo pridėjimas";
+}
+
+<h2>Pridėti naudotoją prie turnyro</h2>
+
+<hr />
+
+@if (TempData["AddStatus"] == "AddSuccess")
+{
+    <h3>Naudotojas pridėtas</h3>
+    <p>Galite pridėti dar vieną naudotoją</p>
+}
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="AddUserToTournament">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Name" class="control-label">Naudotojo vardas</label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Pridėti" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@if (TempData["AddStatus"] == "AddFailed")
+{
+    <h2>Pridėjimas nepavyko</h2>
+    <p>Bandykite dar kartą</p>
+}
+
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+}

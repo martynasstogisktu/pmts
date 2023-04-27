@@ -1,0 +1,107 @@
+﻿@model PMTS.DTOs.MyTournamentsDTO
+
+@{
+    ViewData["Title"] = "Mano turnyrai";
+}
+
+<h1>Details</h1>
+
+<h3>Rengiami turnyrai</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Pavadinimas
+            </th>
+            <th>
+                Ribojamos rūšys
+            </th>
+            <th>
+                Aktyvus
+            </th>
+            <th>
+                Pradžia
+            </th>
+            <th>
+                Pabaiga
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.organizedTournaments)
+        {
+            <tr>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id">@Html.DisplayFor(modelItem => item.Name)</a>
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.RestrictedTypes)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Active)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.StartTime)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EndTime)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<hr />
+<h3>Turnyrai, kuriuose dalyvaujate</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Pavadinimas
+            </th>
+            <th>
+                Ribojamos rūšys
+            </th>
+            <th>
+                Aktyvus
+            </th>
+            <th>
+                Pradžia
+            </th>
+            <th>
+                Pabaiga
+            </th>
+            <th>
+                Rengėjas
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.memberOfTournaments)
+        {
+            <tr>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id">@Html.DisplayFor(modelItem => item.Name)</a>
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.RestrictedTypes)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Active)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.StartTime)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EndTime)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Organizer)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

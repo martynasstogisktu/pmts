@@ -13,6 +13,7 @@
         public List<Contestant>? Contestants { get; set; }
         public List<Bird>? Birds { get; set; }
         public string? Organizer { get; set; }
+        public int UserId { get; set; }
         public int DefaultPoints { get; set; } //kiek tasku verta nuotrauka kai nera rusiu limito
 
         //public List<Photo> Photos { get; set; }

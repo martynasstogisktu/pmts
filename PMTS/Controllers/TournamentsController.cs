@@ -49,6 +49,33 @@ namespace PMTS.Controllers
                         Problem("Entity set 'PSQLcontext.Tournament'  is null.");
         }
 
+        // GET: MyTournaments
+        public async Task<IActionResult> MyTournaments()
+        {
+            try
+            {
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User user = GetUser(int.Parse(validatedToken.Issuer));
+
+                MyTournamentsDTO myTournamentsDTO = new MyTournamentsDTO();
+
+                List<Tournament> organizedTournaments = await _context.Tournament.Where(t => t.UserId == user.Id).ToListAsync();
+                myTournamentsDTO.organizedTournaments = organizedTournaments;
+
+                List<Contestant> contestants = await _context.Contestant.Where(u => u.UserId == user.Id).ToListAsync();
+                foreach (Contestant contestant in contestants)
+                    myTournamentsDTO.memberOfTournaments.Add(await _context.Tournament.FirstOrDefaultAsync(t => t.Id == contestant.TournamentId));
+
+                return View(myTournamentsDTO);
+            }
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Login");
+            }
+        }
+
         // GET: Tournaments/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -304,6 +331,117 @@ namespace PMTS.Controllers
 
         }
 
+        // GET: Tournaments/AddUserToTournament/5
+        public async Task<IActionResult> AddUserToTournament(int? id)
+        {
+            if (id == null || _context.Tournament == null || _context.Users == null)
+            {
+                return NotFound();
+            }
+
+            var tournament = await _context.Tournament.FindAsync(id);
+            var newContestant = _context.Users.FirstOrDefault(e => e.Name == addUserDTO.Name);
+            if (tournament == null)
+            {
+                return NotFound();
+            }
+            if (newContestant == null)
+            {
+                TempData["AddStatus"] = "AddFailed";
+                return RedirectToAction("AddUserToTournament", new { Id = id });
+            }
+            try
+            {
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User user = GetUser(int.Parse(validatedToken.Issuer));
+                if (tournament.UserId != user.Id)
+                {
+                    return RedirectToAction("Details", new { Id = id });
+                }
+                else
+                {
+                    if (tournament.Contestants == null)
+                    {
+                        tournament.Contestants = new List<Contestant>();
+                    }
+                    Contestant contestant = new Contestant();
+                    contestant.UserName = newContestant.Name;
+                    contestant.TournamentName = newContestant.Name;
+                    contestant.UserId = newContestant.Id;
+                    contestant.TournamentId = newContestant.Id;
+
+                    tournament.Contestants.Add(contestant);
+                    _context.Update(tournament);
+                    await _context.SaveChangesAsync();
+                    TempData["AddStatus"] = "AddSuccess";
+                    return RedirectToAction("AddUserToTournament", new { Id = id });
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Login", "Users");
+            }
+
+        }
+
+        // POST: Tournaments/AddPhoto/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddUserToTournament(int? id, AddUserDTO addUserDTO)
+        {
+            if (id == null || _context.Tournament == null || _context.Users == null)
+            {
+                return NotFound();
+            }
+
+            var tournament = await _context.Tournament.FindAsync(id);
+            var newContestant = _context.Users.FirstOrDefault(e => e.Name == addUserDTO.Name);
+            if (tournament == null)
+            {
+                return NotFound();
+            }
+            if (newContestant == null)
+            {
+                TempData["AddStatus"] = "AddFailed";
+                return RedirectToAction("AddUserToTournament", new { Id = id });
+            }
+            try
+            {
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User user = GetUser(int.Parse(validatedToken.Issuer));
+                if (tournament.UserId != user.Id)
+                {
+                    return RedirectToAction("Details", new { Id = id });
+                }
+                else
+                {
+                    if (tournament.Contestants == null)
+                    {
+                        tournament.Contestants = new List<Contestant>();
+                    }
+                    Contestant contestant = new Contestant();
+                    contestant.UserName = newContestant.Name;
+                    contestant.TournamentName = newContestant.Name;
+                    contestant.UserId = newContestant.Id;
+                    contestant.TournamentId = newContestant.Id;
+
+                    tournament.Contestants.Add(contestant);
+                    _context.Update(tournament);
+                    await _context.SaveChangesAsync();
+                    TempData["AddStatus"] = "AddSuccess";
+                    return RedirectToAction("AddUserToTournament", new { Id = id });
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Login", "Users");
+            }
+        }
+
         // GET: Tournaments/AddPhoto/5
         public async Task<IActionResult> AddPhoto(int? id)
         {
@@ -379,8 +517,8 @@ namespace PMTS.Controllers
                 return NotFound();
             }
 
-            //try
-            //{
+            try
+            {
                 string cookie = Request.Cookies["userCookie"];
                 JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
                 User user = GetUser(int.Parse(validatedToken.Issuer));
@@ -453,12 +591,12 @@ namespace PMTS.Controllers
                     //joks pranesimas nenurodomas, nes ikelimo puslapis neturi buti pasiekiamams naudotojams nedalyvaujantiems turnyre
                     return RedirectToAction("Details", new { Id = id });
                 }
-            //}
-            //catch (Exception ex)
-            //{
-            //    TempData["AuthStatus"] = "AuthError";
-            //    return RedirectToAction("Login", "Users");
-            //}
+            }
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Login", "Users");
+            }
 
             //test code
             //string cookie = Request.Cookies["userCookie"];
