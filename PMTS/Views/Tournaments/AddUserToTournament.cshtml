@@ -33,10 +33,14 @@
 
 @if (TempData["AddStatus"] == "AddFailed")
 {
-    <h2>Pridėjimas nepavyko</h2>
+    <h2>Nurodytas naudotojas nerastas</h2>
     <p>Bandykite dar kartą</p>
 }
-
+@if (TempData["AddStatus"] == "AlreadyMember")
+{
+    <h2>Nurodytas naudotojas jau dalyvauja turnyre</h2>
+    <p>Bandykite dar kartą</p>
+}
 
 
 @section Scripts {

@@ -399,6 +399,12 @@ namespace PMTS.Controllers
                 }
                 else
                 {
+                    var checkContestant = _context.Contestant.FirstOrDefault(e => e.UserId == newContestant.Id && e.TournamentId == tournament.Id);
+                    if(checkContestant != null)
+                    {
+                        TempData["AddStatus"] = "AlreadyMember";
+                        return View();
+                    }
                     if (tournament.Contestants == null)
                     {
                         tournament.Contestants = new List<Contestant>();
