@@ -7,3 +7,6 @@ If there are subsequent changes to the code which require the database to be upd
 
 Add-Migration [MigrationName]
 Update-Database
+
+
+The PSQLcontextModelSnapshot.cs file is required since the folder needs to contain at least one class for the project to build successfully.
