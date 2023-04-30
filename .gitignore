@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /PMTS/Properties/launchSettings.json
 /PMTS/Migrations
+/PMTS/Migrations/PSQLcontextModelSnapshot.cs
