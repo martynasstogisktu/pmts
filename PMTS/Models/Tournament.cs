@@ -1,8 +1,13 @@
-﻿namespace PMTS.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace PMTS.Models
 {
     public class Tournament
     {
         public int Id { get; set; }
+        [Required(ErrorMessage = "Įveskite turnyro pavadinimą.")]
+        [StringLength(80, ErrorMessage = "Pavadinimas per ilgas.")]
+        [MinLength(3, ErrorMessage = "Pavadinimas per trumpas.")]
         public string Name { get; set; }
         public bool IsPrivate { get; set; }
         public bool RestrictedTypes { get; set; }
