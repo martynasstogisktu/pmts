@@ -169,7 +169,7 @@ namespace PMTS.Controllers
             return View();
         }
 
-        // GET: Tournaments/ContestantPhotosTest
+        // GET: Tournaments/ContestantPhotos
         public async Task<IActionResult> ContestantPhotos(int? id)
         {
             if (id == null || _context.Contestant == null)

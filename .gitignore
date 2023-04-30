@@ -362,3 +362,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /PMTS/Properties/launchSettings.json
+/PMTS/Migrations/*
