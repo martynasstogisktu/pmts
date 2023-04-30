@@ -64,7 +64,7 @@ namespace PMTS.Controllers
         [Route("Register")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register([Bind("Id,Name,Email,Password")] User user)
+        public async Task<IActionResult> Register([Bind("Name,Email,Password")] User user)
         {
             //visada grazina kad el. pastas arba vardas uzimtas (o ne kuris is ju), kad atskleistu maziau info
             if (GetUser(user.Name) != null || GetUserByEmail(user.Email) != null)
@@ -189,7 +189,7 @@ namespace PMTS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Email,Password")] User user)
+        public async Task<IActionResult> Edit(int id, [Bind("Name,Email,Password")] User user)
         {
             if (id != user.Id)
             {

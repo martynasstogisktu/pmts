@@ -236,7 +236,7 @@ namespace PMTS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,IsPrivate,RestrictedTypes,Active,StartTime,EndTime")] Tournament tournament)
+        public async Task<IActionResult> Create([Bind("Name,IsPrivate,RestrictedTypes,Active,StartTime,EndTime,DefaultPoints")] Tournament tournament)
         {
             try
             {
