@@ -269,7 +269,7 @@ namespace PMTS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,IsPrivate,RestrictedTypes,Active,StartTime,EndTime,DefaultPoints")] Tournament tournament)
+        public async Task<IActionResult> Create([Bind("Name,IsPrivate,Active,StartTime,EndTime,DefaultPoints")] Tournament tournament)
         {
             try
             {
@@ -300,6 +300,7 @@ namespace PMTS.Controllers
                 {
                     tournament.StartTime = tournament.StartTime.ToUniversalTime();
                     tournament.EndTime = tournament.EndTime.ToUniversalTime();
+                    tournament.RestrictedTypes = false;
                     if (user.Tournaments == null)
                     {
                         user.Tournaments = new List<Tournament>();
