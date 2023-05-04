@@ -23,6 +23,7 @@ using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
 using PMTS.Migrations;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Reflection.Metadata;
 
 namespace PMTS.Controllers
 {
@@ -117,6 +118,14 @@ namespace PMTS.Controllers
                     string cookie = Request.Cookies["userCookie"];
                     JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
                     User user = GetUser(int.Parse(validatedToken.Issuer));
+                    if(tournament.IsPrivate)
+                    {
+                        //jei privatus turnyras, tikrinama ar naudotojas yra dalyvis, rengejas
+                        if (!((_context.Contestant.FirstOrDefault(m => m.UserId == user.Id && m.TournamentId == tournament.Id) != null) || tournament.UserId == user.Id) || !user.Admin)
+                        {
+                            return RedirectToAction("Index", "Home");
+                        }
+                    }
                     TempData["LoggedIn"] = "True";
                     if (tournament.Organizer == user.Name)
                     {
@@ -145,12 +154,16 @@ namespace PMTS.Controllers
                 else
                 {
                     TempData["LoggedIn"] = "False";
+                    if (tournament.IsPrivate)
+                        return RedirectToAction("Index", "Home");
                 }
             }
             catch (Exception ex)
             {
-                //prisijungimas neprivalomas, tad įvykus autentifikacijos nenukreipiama i prisijungima
+                //prisijungimas neprivalomas, tad įvykus autentifikacijos nenukreipiama i prisijungima (tik jei privatus)
                 TempData["LoggedIn"] = "False";
+                if(tournament.IsPrivate)
+                    return RedirectToAction("Index", "Home");
             }
             if(tournament.RestrictedTypes)
             {
@@ -166,7 +179,27 @@ namespace PMTS.Controllers
         // GET: Tournaments/Create
         public IActionResult Create()
         {
-            return View();
+            try
+            {
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User user = GetUser(int.Parse(validatedToken.Issuer));
+                if(user == null)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Login", "Users");
+                }
+                if (user.Admin)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                return View();
+            }
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Login", "Users");
+            }
         }
 
         // GET: Tournaments/ContestantPhotos
@@ -210,17 +243,17 @@ namespace PMTS.Controllers
                         JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
                         User user = GetUser(int.Parse(validatedToken.Issuer));
 
-                        if ((_context.Contestant.FirstOrDefault(m => m.UserId == user.Id && m.TournamentId == tournament.Id) != null) || tournament.UserId == user.Id)
+                        if ((_context.Contestant.FirstOrDefault(m => m.UserId == user.Id && m.TournamentId == tournament.Id) != null) || tournament.UserId == user.Id || user.Admin)
                         {
                             return View(contestant);
                         }
                         else
                         {
-                            return RedirectToAction("Details", new { Id = tournament.Id });
+                            return RedirectToAction("Index", "Home");
                         }
                     }
                     else
-                        return RedirectToAction("Details", new { Id = tournament.Id });
+                        return RedirectToAction("Index", "Home");
                 }
                 catch (Exception ex)
                 {
@@ -243,6 +276,15 @@ namespace PMTS.Controllers
                 string cookie = Request.Cookies["userCookie"];
                 JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
                 User user = GetUser(int.Parse(validatedToken.Issuer));
+                if (user == null)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Login", "Users");
+                }
+                if (user.Admin)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
                 tournament.Organizer = user.Name;
                 //if (!ModelState.IsValid)
                 //{
@@ -299,6 +341,15 @@ namespace PMTS.Controllers
                 string cookie = Request.Cookies["userCookie"];
                 JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
                 User user = GetUser(int.Parse(validatedToken.Issuer));
+                if (user == null)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Login", "Users");
+                }
+                if (user.Admin)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
                 if (tournament.Organizer == user.Name)
                 {
                     TempData["TournamentError"] = "OwnerJoin";
@@ -350,6 +401,15 @@ namespace PMTS.Controllers
                 string cookie = Request.Cookies["userCookie"];
                 JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
                 User user = GetUser(int.Parse(validatedToken.Issuer));
+                if (user == null)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Login", "Users");
+                }
+                if (user.Admin)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
                 if (tournament.UserId != user.Id)
                 {
                     return RedirectToAction("Details", new { Id = id });
@@ -393,6 +453,15 @@ namespace PMTS.Controllers
                 string cookie = Request.Cookies["userCookie"];
                 JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
                 User user = GetUser(int.Parse(validatedToken.Issuer));
+                if (user == null)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Login", "Users");
+                }
+                if (user.Admin)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
                 if (tournament.UserId != user.Id)
                 {
                     return RedirectToAction("Details", new { Id = id });
@@ -449,6 +518,15 @@ namespace PMTS.Controllers
                 string cookie = Request.Cookies["userCookie"];
                 JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
                 User user = GetUser(int.Parse(validatedToken.Issuer));
+                if (user == null)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Login", "Users");
+                }
+                if (user.Admin)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
 
                 if (_context.Contestant.FirstOrDefault(m => m.UserName == user.Name && m.TournamentName == tournament.Name) != null)
                 {
@@ -509,6 +587,15 @@ namespace PMTS.Controllers
                 string cookie = Request.Cookies["userCookie"];
                 JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
                 User user = GetUser(int.Parse(validatedToken.Issuer));
+                if (user == null)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Login", "Users");
+                }
+                if (user.Admin)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
                 Contestant? contestant = _context.Contestant.FirstOrDefault(m => m.UserName == user.Name && m.TournamentName == tournament.Name);
 
                 if (contestant != null)
@@ -704,7 +791,49 @@ namespace PMTS.Controllers
                 return NotFound();
             }
 
-            return View(photo);
+            var tournament = await _context.Tournament
+                .FirstOrDefaultAsync(m => m.Id == photo.TournamentId);
+            if (tournament == null)
+            {
+                return NotFound();
+            }
+
+            _context.Contestant.Include(contestant => contestant.Photos).ToList();
+
+            if (!tournament.IsPrivate)
+            {
+                return View(photo);
+            }
+
+            else
+            {
+                //jei privatus turnyras, perziureti galima tik prisijungus ir jame dalyvaujant
+                try
+                {
+                    if (Request.Cookies["userCookie"] != null)
+                    {
+                        string cookie = Request.Cookies["userCookie"];
+                        JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                        User user = GetUser(int.Parse(validatedToken.Issuer));
+
+                        if ((_context.Contestant.FirstOrDefault(m => m.UserId == user.Id && m.TournamentId == tournament.Id) != null) || tournament.UserId == user.Id || user.Admin)
+                        {
+                            return View(photo);
+                        }
+                        else
+                        {
+                            return RedirectToAction("Index", "Home");
+                        }
+                    }
+                    else
+                        return RedirectToAction("Index", "Home");
+                }
+                catch (Exception ex)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Login", "Users");
+                }
+            }
         }
 
         // GET: Tournaments/Edit/5
@@ -725,6 +854,11 @@ namespace PMTS.Controllers
                 string cookie = Request.Cookies["userCookie"];
                 JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
                 User user = GetUser(int.Parse(validatedToken.Issuer));
+                if (user == null)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Login", "Users");
+                }
                 if (tournament.Organizer == user.Name)
                 {
                     return View(tournament);
@@ -760,6 +894,11 @@ namespace PMTS.Controllers
                     string cookie = Request.Cookies["userCookie"];
                     JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
                     User user = GetUser(int.Parse(validatedToken.Issuer));
+                    if (user == null)
+                    {
+                        TempData["AuthStatus"] = "AuthError";
+                        return RedirectToAction("Login", "Users");
+                    }
                     if (tournament.Organizer == user.Name)
                     {
                         try
