@@ -121,7 +121,7 @@ namespace PMTS.Controllers
                     if(tournament.IsPrivate)
                     {
                         //jei privatus turnyras, tikrinama ar naudotojas yra dalyvis, rengejas
-                        if (!((_context.Contestant.FirstOrDefault(m => m.UserId == user.Id && m.TournamentId == tournament.Id) != null) || tournament.UserId == user.Id) || !user.Admin)
+                        if (!((_context.Contestant.FirstOrDefault(m => m.UserId == user.Id && m.TournamentId == tournament.Id) != null) || tournament.UserId == user.Id || !user.Admin))
                         {
                             return RedirectToAction("Index", "Home");
                         }
