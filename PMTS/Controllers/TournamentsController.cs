@@ -137,7 +137,7 @@ namespace PMTS.Controllers
                     }
                     if (!_context.Contestant.IsNullOrEmpty())
                     {
-                        if(_context.Contestant.FirstOrDefault(m => m.UserId == user.Id && m.TournamentId == tournament.Id) != null)
+                        if (_context.Contestant.FirstOrDefault(m => m.UserId == user.Id && m.TournamentId == tournament.Id) != null)
                         {
                             TempData["IsContestant"] = "True";
                         }

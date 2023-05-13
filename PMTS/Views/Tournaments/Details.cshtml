@@ -87,6 +87,7 @@
     @{
         if (Model.Contestants != null)
         {
+            var orderedList = Model.Contestants.OrderByDescending(contestant => contestant.Points);
             <h3>Dalyviai</h3>
             <table class="table">
                 <thead>
@@ -100,7 +101,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model.Contestants)
+                    @foreach (var item in orderedList)
                     {
                     <tr>
                         <td>
