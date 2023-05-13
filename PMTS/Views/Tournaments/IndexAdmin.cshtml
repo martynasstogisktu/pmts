@@ -31,6 +31,9 @@
             <th>
                 Rengėjas
             </th>
+            <th>
+                Privatus
+            </th>
             <th></th>
         </tr>
     </thead>
@@ -50,7 +53,10 @@
                 @Html.DisplayFor(modelItem => item.EndTime)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Organizer)
+            @Html.DisplayFor(modelItem => item.Organizer)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsPrivate)
             </td>
         </tr>
 }

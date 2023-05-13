@@ -30,6 +30,7 @@
     @if (TempData["IsAdmin"] == "false")
     {
         <a asp-controller="Tournaments" asp-action="MyTournaments">Mano turnyrai</a>
+        <br />
     }
     <input type="button" value="Keisti slaptažodį" class="btn btn-primary" onclick="window.location.href='@Url.Action("ChangePassword")';" />
     
