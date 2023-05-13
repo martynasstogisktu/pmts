@@ -5,3 +5,27 @@
 <div class="text-center">
     <h1 class="display-4">Paukščių medžioklės fotoaparatu varžybų sistema</h1>
 </div>
+
+@if(TempData["LoggedIn"] == "false")
+{
+    <a asp-area="" asp-controller="Users" asp-action="Login">Prisijungimas</a>
+    <br />
+    <a asp-area="" asp-controller="Users" asp-action="Register">Registracija</a>
+}
+else
+{
+    if (TempData["IsAdmin"] == "true")
+    {
+        <a asp-area="" asp-controller="Users" asp-action="Index">Naudotojų sąrašas</a>
+        <br />
+        <a asp-area="" asp-controller="Users" asp-action="RegisterAdmin">Naudotojo paskyros kūrimas</a>
+        <br />
+        <a asp-area="" asp-controller="Tournaments" asp-action="IndexAdmin">Turnyrų sąrašas</a>
+    }
+    else
+    {
+        <a asp-area="" asp-controller="Tournaments" asp-action="Index">Turnyrų sąrašas</a>
+        <br />
+        <a asp-area="" asp-controller="Tournaments" asp-action="MyTournaments">Mano turnyrai</a>
+    }
+}

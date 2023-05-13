@@ -98,14 +98,17 @@
                 <tbody>
                     @foreach (var item in orderedList)
                     {
-                    <tr>
-                        <td>
-                            <a asp-action="ContestantPhotos" asp-route-id="@item.Id">@Html.DisplayFor(modelItem => item.UserName)</a>
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Points)
-                        </td>
-                    </tr>
+                        if( !item.Removed)
+                        {
+                            <tr>
+                                <td>
+                                    <a asp-action="ContestantPhotos" asp-route-id="@item.Id">@Html.DisplayFor(modelItem => item.UserName)</a>
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Points)
+                                </td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>

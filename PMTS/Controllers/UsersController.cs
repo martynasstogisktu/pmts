@@ -231,7 +231,7 @@ namespace PMTS.Controllers
 
             TempData["LoginStatus"] = "LoginSuccess";
             TempData["AuthStatus"] = "AuthSuccess";
-            return RedirectToAction("Index", "Tournaments");
+            return RedirectToAction("Index", "Home");
         }
 
         public IActionResult ChangePassword()

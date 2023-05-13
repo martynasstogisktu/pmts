@@ -187,7 +187,7 @@ namespace PMTS.Controllers
                 if(user == null)
                 {
                     TempData["AuthStatus"] = "AuthError";
-                    return RedirectToAction("Login", "Users");
+                    return RedirectToAction("Index", "Home");
                 }
                 if (user.Admin)
                 {
@@ -198,7 +198,7 @@ namespace PMTS.Controllers
             catch (Exception ex)
             {
                 TempData["AuthStatus"] = "AuthError";
-                return RedirectToAction("Login", "Users");
+                return RedirectToAction("Index", "Home");
             }
         }
 
@@ -258,7 +258,7 @@ namespace PMTS.Controllers
                 catch (Exception ex)
                 {
                     TempData["AuthStatus"] = "AuthError";
-                    return RedirectToAction("Login", "Users");
+                    return RedirectToAction("Index", "Home");
                 }
             }
 
@@ -279,7 +279,7 @@ namespace PMTS.Controllers
                 if (user == null)
                 {
                     TempData["AuthStatus"] = "AuthError";
-                    return RedirectToAction("Login", "Users");
+                    return RedirectToAction("Index", "Home");
                 }
                 if (user.Admin)
                 {
@@ -315,7 +315,7 @@ namespace PMTS.Controllers
             catch (Exception ex)
             {
                 TempData["AuthStatus"] = "AuthError";
-                return RedirectToAction("Login", "Users");
+                return RedirectToAction("Index", "Home");
             }
             
         }
@@ -345,7 +345,7 @@ namespace PMTS.Controllers
                 if (user == null)
                 {
                     TempData["AuthStatus"] = "AuthError";
-                    return RedirectToAction("Login", "Users");
+                    return RedirectToAction("Index", "Home");
                 }
                 if (user.Admin)
                 {
@@ -379,7 +379,7 @@ namespace PMTS.Controllers
             catch (Exception ex)
             {
                 TempData["AuthStatus"] = "AuthError";
-                return RedirectToAction("Login", "Users");
+                return RedirectToAction("Index", "Home");
             }
 
         }
@@ -405,7 +405,7 @@ namespace PMTS.Controllers
                 if (user == null)
                 {
                     TempData["AuthStatus"] = "AuthError";
-                    return RedirectToAction("Login", "Users");
+                    return RedirectToAction("Index", "Home");
                 }
                 if (user.Admin)
                 {
@@ -423,7 +423,7 @@ namespace PMTS.Controllers
             catch (Exception ex)
             {
                 TempData["AuthStatus"] = "AuthError";
-                return RedirectToAction("Login", "Users");
+                return RedirectToAction("Index", "Home");
             }
 
         }
@@ -457,7 +457,7 @@ namespace PMTS.Controllers
                 if (user == null)
                 {
                     TempData["AuthStatus"] = "AuthError";
-                    return RedirectToAction("Login", "Users");
+                    return RedirectToAction("Index", "Home");
                 }
                 if (user.Admin)
                 {
@@ -495,7 +495,7 @@ namespace PMTS.Controllers
             catch (Exception ex)
             {
                 TempData["AuthStatus"] = "AuthError";
-                return RedirectToAction("Login", "Users");
+                return RedirectToAction("Index", "Home");
             }
         }
 
@@ -522,7 +522,7 @@ namespace PMTS.Controllers
                 if (user == null)
                 {
                     TempData["AuthStatus"] = "AuthError";
-                    return RedirectToAction("Login", "Users");
+                    return RedirectToAction("Index", "Home");
                 }
                 if (user.Admin)
                 {
@@ -546,7 +546,7 @@ namespace PMTS.Controllers
             catch (Exception ex)
             {
                 TempData["AuthStatus"] = "AuthError";
-                return RedirectToAction("Login", "Users");
+                return RedirectToAction("Index", "Home");
             }
 
 
@@ -591,7 +591,7 @@ namespace PMTS.Controllers
                 if (user == null)
                 {
                     TempData["AuthStatus"] = "AuthError";
-                    return RedirectToAction("Login", "Users");
+                    return RedirectToAction("Index", "Home");
                 }
                 if (user.Admin)
                 {
@@ -670,7 +670,7 @@ namespace PMTS.Controllers
             catch (Exception ex)
             {
                 TempData["AuthStatus"] = "AuthError";
-                return RedirectToAction("Login", "Users");
+                return RedirectToAction("Index", "Home");
             }
 
             //test code
@@ -832,7 +832,7 @@ namespace PMTS.Controllers
                 catch (Exception ex)
                 {
                     TempData["AuthStatus"] = "AuthError";
-                    return RedirectToAction("Login", "Users");
+                    return RedirectToAction("Index", "Home");
                 }
             }
         }
@@ -858,7 +858,7 @@ namespace PMTS.Controllers
                 if (user == null)
                 {
                     TempData["AuthStatus"] = "AuthError";
-                    return RedirectToAction("Login", "Users");
+                    return RedirectToAction("Index", "Home");
                 }
                 if (tournament.Organizer == user.Name)
                 {
@@ -872,7 +872,7 @@ namespace PMTS.Controllers
             catch (Exception ex)
             {
                 TempData["AuthStatus"] = "AuthError";
-                return RedirectToAction("Login", "Users");
+                return RedirectToAction("Index", "Home");
             }
         }
 
@@ -898,7 +898,7 @@ namespace PMTS.Controllers
                     if (user == null)
                     {
                         TempData["AuthStatus"] = "AuthError";
-                        return RedirectToAction("Login", "Users");
+                        return RedirectToAction("Index", "Home");
                     }
                     if (tournament.Organizer == user.Name)
                     {
@@ -928,7 +928,7 @@ namespace PMTS.Controllers
                 catch (Exception ex)
                 {
                     TempData["AuthStatus"] = "AuthError";
-                    return RedirectToAction("Login", "Users");
+                    return RedirectToAction("Index", "Home");
                 }
                 
             }
