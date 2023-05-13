@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using NuGet.Protocol.Plugins;
 using PMTS.Authentication;
 using PMTS.DTOs;
 using PMTS.Models;
@@ -42,6 +43,13 @@ namespace PMTS.Controllers
                 string cookie = Request.Cookies["userCookie"];
                 JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
                 User user = GetUser(int.Parse(validatedToken.Issuer));
+                if (user.Admin)
+                {
+                    //mygtukas "Mano turnyrai" neatvaizduojamas administratoriams
+                    TempData["IsAdmin"] = "true";
+                }
+                else
+                    TempData["IsAdmin"] = "false";
                 return View(user);
             }
             catch (Exception ex)
@@ -89,6 +97,88 @@ namespace PMTS.Controllers
             return View();
         }
 
+        [Route("RegisterAdmin")]
+        public IActionResult RegisterAdmin()
+        {
+            try
+            {
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User user = GetUser(int.Parse(validatedToken.Issuer));
+                if (user == null)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Login", "Users");
+                }
+                if (user.Admin)
+                {
+                    return View();
+                }
+                else
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Login", "Users");
+            }
+        }
+
+        // POST: Register
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Route("RegisterAdmin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RegisterAdmin([Bind("Name,Email,Password")] User newUser)
+        {
+            try
+            {
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User user = GetUser(int.Parse(validatedToken.Issuer));
+                if (user == null)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Login", "Users");
+                }
+                if (user.Admin)
+                {
+                    if (GetUser(newUser.Name) != null)
+                    {
+                        ModelState.AddModelError("Name", "Naudotojas nurodytu vardu ar el. paštu jau egzistuoja.");
+                    }
+                    if (GetUserByEmail(newUser.Email) != null)
+                    {
+                        ModelState.AddModelError("Email", "Naudotojas nurodytu vardu ar el. paštu jau egzistuoja.");
+                    }
+
+                    if (!ModelState.IsValid)
+                    {
+                        TempData["RegisterStatus"] = "RegisterFailed";
+                        return View();
+                    }
+                    newUser.Admin = true;
+                    newUser.Password = _context.Helper.FromSql($"SELECT crypt({newUser.Password}, gen_salt('bf', 8));").ToList().FirstOrDefault().crypt;
+                    _context.Add(newUser);
+                    await _context.SaveChangesAsync();
+                    TempData["RegisterStatus"] = "RegisterSuccess";
+                    return View();
+                }
+                else
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Login", "Users");
+            }
+        }
+
         [Route("Login")]
         public IActionResult Login()
         {
@@ -116,10 +206,6 @@ namespace PMTS.Controllers
                 {
                     ModelState.AddModelError("Password", "Slaptažodis neteisingas.");
                     TempData["LoginStatus"] = "LoginFailed";
-                    TempData["login"] = login.Password;
-                    TempData["user"] = user.Password;
-                    TempData["crypt"] = helper;
-                    TempData["test"] = "hello1";
                 }
                 //if (user.Password != login.Password)
                 //{
@@ -146,6 +232,79 @@ namespace PMTS.Controllers
             TempData["LoginStatus"] = "LoginSuccess";
             TempData["AuthStatus"] = "AuthSuccess";
             return RedirectToAction("Index", "Tournaments");
+        }
+
+        public IActionResult ChangePassword()
+        {
+            try
+            {
+                //tikrinama ar naudotojas prisijunges
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User user = GetUser(int.Parse(validatedToken.Issuer));
+                if (user == null)
+                {
+                    return RedirectToAction("Login");
+                }
+                else
+                {
+                    return View();
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Login");
+            }
+        }
+
+        // POST: ChangePassword
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(PasswordDTO passwordDTO)
+        {
+            try
+            {
+                //tikrinama ar naudotojas prisijunges
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User user = GetUser(int.Parse(validatedToken.Issuer));
+                if (user == null)
+                {
+                    return RedirectToAction("Login");
+                }
+                else
+                {
+                    string oldPassword = _context.Helper.FromSql($"SELECT crypt({passwordDTO.oldPassword}, {user.Password});").ToList().FirstOrDefault().crypt;
+                    string newPassword = _context.Helper.FromSql($"SELECT crypt({passwordDTO.newPassword}, gen_salt('bf', 8));").ToList().FirstOrDefault().crypt;
+                    if (oldPassword != user.Password)
+                    {
+                        ModelState.AddModelError("oldPassword", "Slaptažodis neteisingas.");
+                        TempData["ChangeStatus"] = "ChangeFailed";
+                    }
+                    if(passwordDTO.newPassword != passwordDTO.newPasswordConfirm)
+                    {
+                        ModelState.AddModelError("newPasswordConfirm", "Slaptažodžiai nesutampa.");
+                        TempData["ChangeStatus"] = "ChangeFailed";
+                    }
+                    if (!ModelState.IsValid)
+                    {
+                        return View();
+                    }
+
+                    user.Password = newPassword;
+                    _context.Update(user);
+                    await _context.SaveChangesAsync();
+                    TempData["ChangeStatus"] = "ChangeSuccess";
+                    TempData["AuthStatus"] = "AuthSuccess";
+                    return View();
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Login");
+            }
         }
 
         [Route("Logout")]

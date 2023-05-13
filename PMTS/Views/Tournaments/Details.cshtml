@@ -57,11 +57,6 @@
                 <a asp-action="Delete" asp-route-id="@Model?.Id">Trinti</a>
                 <br />
 
-                if (TempData["RestrictedTypes"] == "True")
-                {
-                    <a asp-action="AddBird" asp-route-id="@Model?.Id">Pridėti leidžiamų paukščių</a>
-                    <br />
-                }
             }
             else
             {

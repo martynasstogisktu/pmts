@@ -1,13 +1,11 @@
 ﻿@model PMTS.Models.User
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Naudotojo informacija";
 }
 
-<h1>Details</h1>
-
 <div>
-    <h4>User</h4>
+    <h4>Naudotojo informacija</h4>
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
@@ -22,15 +20,17 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Email)
         </dd>
-        <dt class="col-sm-2">
-            Ar administratorius?
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Admin)
-        </dd>
     </dl>
+    @if (TempData["IsAdmin"] == "true")
+    {
+        <p><b>Naudotojas yra administratorius</b></p>
+    }
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    @if (TempData["IsAdmin"] == "false")
+    {
+        <a asp-controller="Tournaments" asp-action="MyTournaments">Mano turnyrai</a>
+    }
+    <input type="button" value="Keisti slaptažodį" class="btn btn-primary" onclick="window.location.href='@Url.Action("ChangePassword")';" />
+    
 </div>
