@@ -50,6 +50,13 @@ namespace PMTS.Controllers
                         Problem("Entity set 'PSQLcontext.Tournament'  is null.");
         }
 
+        public async Task<IActionResult> IndexAdmin()
+        {
+            return _context.Tournament != null ?
+                        View(await _context.Tournament.ToListAsync()) :
+                        Problem("Entity set 'PSQLcontext.Tournament'  is null.");
+        }
+
         // GET: MyTournaments
         public async Task<IActionResult> MyTournaments()
         {

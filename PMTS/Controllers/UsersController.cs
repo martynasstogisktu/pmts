@@ -55,7 +55,7 @@ namespace PMTS.Controllers
             catch (Exception ex)
             {
                 TempData["AuthStatus"] = "AuthError";
-                return RedirectToAction("Login");
+                return RedirectToAction("Index", "Home");
             }
         }
 
@@ -108,7 +108,7 @@ namespace PMTS.Controllers
                 if (user == null)
                 {
                     TempData["AuthStatus"] = "AuthError";
-                    return RedirectToAction("Login", "Users");
+                    return RedirectToAction("Index", "Home");
                 }
                 if (user.Admin)
                 {
@@ -122,7 +122,7 @@ namespace PMTS.Controllers
             catch (Exception ex)
             {
                 TempData["AuthStatus"] = "AuthError";
-                return RedirectToAction("Login", "Users");
+                return RedirectToAction("Index", "Home");
             }
         }
 
@@ -142,7 +142,7 @@ namespace PMTS.Controllers
                 if (user == null)
                 {
                     TempData["AuthStatus"] = "AuthError";
-                    return RedirectToAction("Login", "Users");
+                    return RedirectToAction("Index", "Home");
                 }
                 if (user.Admin)
                 {
@@ -175,7 +175,7 @@ namespace PMTS.Controllers
             catch (Exception ex)
             {
                 TempData["AuthStatus"] = "AuthError";
-                return RedirectToAction("Login", "Users");
+                return RedirectToAction("Index", "Home");
             }
         }
 
@@ -244,7 +244,7 @@ namespace PMTS.Controllers
                 User user = GetUser(int.Parse(validatedToken.Issuer));
                 if (user == null)
                 {
-                    return RedirectToAction("Login");
+                    return RedirectToAction("Index", "Home");
                 }
                 else
                 {
@@ -254,7 +254,7 @@ namespace PMTS.Controllers
             catch (Exception ex)
             {
                 TempData["AuthStatus"] = "AuthError";
-                return RedirectToAction("Login");
+                return RedirectToAction("Index", "Home");
             }
         }
 
@@ -271,7 +271,7 @@ namespace PMTS.Controllers
                 User user = GetUser(int.Parse(validatedToken.Issuer));
                 if (user == null)
                 {
-                    return RedirectToAction("Login");
+                    return RedirectToAction("Index", "Home");
                 }
                 else
                 {
@@ -303,7 +303,7 @@ namespace PMTS.Controllers
             catch (Exception ex)
             {
                 TempData["AuthStatus"] = "AuthError";
-                return RedirectToAction("Login");
+                return RedirectToAction("Index", "Home");
             }
         }
 
@@ -322,7 +322,7 @@ namespace PMTS.Controllers
             catch (Exception ex)
             {
                 TempData["AuthStatus"] = "AuthError";
-                return RedirectToAction("Login");
+                return RedirectToAction("Index", "Home");
             }
 
         }
