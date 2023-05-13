@@ -30,9 +30,28 @@ namespace PMTS.Controllers
         // GET: Users
         public async Task<IActionResult> Index()
         {
-              return _context.Users != null ? 
+            try
+            {
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User user = GetUser(int.Parse(validatedToken.Issuer));
+                if (user.Admin)
+                {
+                    return _context.Users != null ?
                           View(await _context.Users.ToListAsync()) :
                           Problem("Entity set 'PSQLcontext.Users'  is null.");
+                }
+                else
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         // GET: Users/Details
