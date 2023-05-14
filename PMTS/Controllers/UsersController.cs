@@ -184,6 +184,7 @@ namespace PMTS.Controllers
                     _context.Add(newUser);
                     await _context.SaveChangesAsync();
                     TempData["RegisterStatus"] = "RegisterSuccess";
+                    ModelState.Clear();
                     return View();
                 }
                 else

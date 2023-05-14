@@ -454,7 +454,7 @@ namespace PMTS.Controllers
 
         }
 
-        // POST: Tournaments/AddPhoto/5
+        // POST: Tournaments/AddUserToTournament/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddUserToTournament(int? id, AddUserDTO addUserDTO)
@@ -516,6 +516,118 @@ namespace PMTS.Controllers
                     await _context.SaveChangesAsync();
                     TempData["AddStatus"] = "AddSuccess";
                     return View();
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Index", "Home");
+            }
+        }
+        // GET: Tournaments/CheckPhoto/5
+        public async Task<IActionResult> CheckPhoto(int? id)
+        {
+            if (id == null || _context.Tournament == null || _context.Users == null)
+            {
+                return NotFound();
+            }
+
+            var tournament = await _context.Tournament.FindAsync(id);
+            if (tournament == null)
+            {
+                return NotFound();
+            }
+            try
+            {
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User user = GetUser(int.Parse(validatedToken.Issuer));
+                if (user == null)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Index", "Home");
+                }
+                if (user.Admin)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                if (tournament.UserId != user.Id)
+                {
+                    return RedirectToAction("Details", new { Id = id });
+                }
+                else
+                {
+                    List<Photo> photos = _context.Photo.Where(p => p.TournamentId == tournament.Id && !p.BirdDetected).ToList();
+
+                    return View(photos);
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Index", "Home");
+            }
+
+        }
+
+        // POST: Tournaments/ConfirmPhoto/5
+        // nuotraukos patvirtinimas kad yra paukstis (rankiniu budu)
+        [ValidateAntiForgeryToken]
+        [HttpPost, ActionName("ConfirmPhoto")]
+        public async Task<IActionResult> ConfirmPhoto(int? id)
+        {
+            if (_context.Tournament == null || _context.Users == null || id == null)
+            {
+                return NotFound();
+            }
+
+            
+            var photo = _context.Photo.FirstOrDefault(e => e.Id == id);
+            var tournament = await _context.Tournament.FindAsync(photo.TournamentId);
+            if (tournament == null)
+            {
+                return NotFound();
+            }
+            if (photo == null)
+            {
+                TempData["ConfirmStatus"] = "ConfirmFailed";
+                return RedirectToAction("CheckPhoto", new { Id = tournament.Id });
+            }
+            try
+            {
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User user = GetUser(int.Parse(validatedToken.Issuer));
+                if (user == null)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Index", "Home");
+                }
+                if (user.Admin)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                if (tournament.UserId != user.Id)
+                {
+                    return RedirectToAction("Details", new { Id = tournament.Id });
+                }
+                else
+                {
+                    try
+                    {
+                        Contestant contestant = _context.Contestant.FirstOrDefault(e => e.Id == photo.ContestantId);
+                        contestant.Photos.First(p => p.Id == photo.Id).BirdDetected = true;
+                        contestant.Points += photo.Points;
+                        _context.Contestant.Update(contestant);
+                        await _context.SaveChangesAsync();
+                        TempData["ConfirmStatus"] = "ConfirmSuccess";
+                        return RedirectToAction("CheckPhoto", new { Id = tournament.Id });
+                    }
+                    catch
+                    {
+                        TempData["ConfirmStatus"] = "ConfirmFailed";
+                        return RedirectToAction("CheckPhoto", new { Id = tournament.Id });
+                    }
                 }
             }
             catch (Exception ex)

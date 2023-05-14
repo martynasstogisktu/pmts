@@ -10,7 +10,7 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Register">
+        <form asp-action="RegisterAdmin">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Name" class="control-label">Vardas</label>
@@ -28,7 +28,7 @@
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Registruotis" class="btn btn-primary" />
+                <input type="submit" value="Registruoti" class="btn btn-primary" />
             </div>
         </form>
     </div>
@@ -37,7 +37,7 @@
 
     @if (TempData["RegisterStatus"] == "RegisterSuccess")
     {
-        <h2>Administratoriaus paskyra sukurta</h2>
+        <h4>Administratoriaus paskyra sukurta</h4>
     }
 
 

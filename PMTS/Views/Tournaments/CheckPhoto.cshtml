@@ -1,0 +1,76 @@
+﻿@model IEnumerable<PMTS.Models.Photo>
+
+@{
+    ViewData["Title"] = "Nuotraukos";
+}
+
+<h2>Nuotraukos rankiniam patikrinimui</h2>
+
+@{
+    if (Model.Count() != 0)
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        Nuotrauka
+                    </th>
+                    <th>
+                        Paukščių kiekis nuotraukoje
+                    </th>
+                    <th>
+                        Bendras nuotraukos taškų kiekis
+                    </th>
+                    <th>
+                        
+                    </th>
+                    <th>
+                        
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <a asp-action="Photo" asp-route-id="@item.Id">
+                                <img src="https://pmts.blob.core.windows.net/pmts-pic/@item.ThumbName" alt="Nuotrauka Nr. @item.Id" />
+                            </a>
+                        </td>
+                        <td>
+                            @item.BirdN
+                        </td>
+                        <td>
+                            @item.Points
+                        </td>
+                        <td>
+                            <a asp-action="ConfirmPhoto" asp-route-id="@item.Id">
+                                Patvirtinti
+                            </a>
+                        </td>
+                        <td>
+                            <form asp-action="ConfirmPhoto">
+                                <input type="hidden" asp-for="@item.Id" />
+                                <input type="submit" value="Trinti PLACEHOLDER" class="btn btn-primary" asp-action="ConfirmPhoto" asp-route-id="@item.Id" />
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <h4>Nėra nuotraukų rankiniam patikrinimui</h4>
+    }
+    @if (TempData["ConfirmStatus"] == "ConfirmFailed")
+    {
+        <p>nepavyko</p>
+    }
+    @if (TempData["ConfirmStatus"] == "ConfirmSuccess")
+    {
+        <p>pavyko</p>
+    }
+}
+
