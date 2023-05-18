@@ -27,19 +27,23 @@
             <tbody>
                 @foreach (var item in Model.Photos)
                 {
-                    <tr>
-                        <td>
-                            <a asp-action="Photo" asp-route-id="@item.Id">
-                                <img src="https://pmts.blob.core.windows.net/pmts-pic/@item.ThumbName" alt="Nuotrauka Nr. @item.Id" />
-                            </a>
-                        </td>
-                        <td>
-                            @item.BirdN
-                        </td>
-                        <td>
-                            @item.Points
-                        </td>
-                    </tr>
+                    if(item.BirdDetected)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-action="Photo" asp-route-id="@item.Id">
+                                    <img src="https://pmts.blob.core.windows.net/pmts-pic/@item.ThumbName" alt="Nuotrauka Nr. @item.Id" />
+                                </a>
+                            </td>
+                            <td>
+                                @item.BirdN
+                            </td>
+                            <td>
+                                @item.Points
+                            </td>
+                        </tr>
+                    }
+                    
                 }
             </tbody>
         </table>

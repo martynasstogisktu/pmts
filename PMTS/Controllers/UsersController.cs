@@ -5,6 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -20,11 +21,13 @@ namespace PMTS.Controllers
     {
         private readonly PSQLcontext _context;
         private readonly PmtsJwt _pmtsJwt;
+        private readonly BlobContainerClient _blobContainerClient;
 
         public UsersController(PSQLcontext context, PmtsJwt pmtsJwt)
         {
             _context = context;
             _pmtsJwt = pmtsJwt;
+            _blobContainerClient = new BlobServiceClient(Environment.GetEnvironmentVariable("Storage")).GetBlobContainerClient("pmts-pic");
         }
 
         // GET: Users
@@ -413,7 +416,32 @@ namespace PMTS.Controllers
                 return NotFound();
             }
 
-            return View(user);
+            try
+            {
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User currentUser = GetUser(int.Parse(validatedToken.Issuer));
+                if (currentUser == null)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Index", "Home");
+                }
+                if (!currentUser.Admin)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+                    return View(user);
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Index", "Home");
+            }
+
+            
         }
 
         // POST: Users/Delete/5
@@ -426,9 +454,49 @@ namespace PMTS.Controllers
                 return Problem("Entity set 'PSQLcontext.Users'  is null.");
             }
             var user = await _context.Users.FindAsync(id);
+
             if (user != null)
             {
-                _context.Users.Remove(user);
+                try
+                {
+                    string cookie = Request.Cookies["userCookie"];
+                    JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                    User currentUser = GetUser(int.Parse(validatedToken.Issuer));
+                    if (currentUser == null)
+                    {
+                        TempData["AuthStatus"] = "AuthError";
+                        return RedirectToAction("Index", "Home");
+                    }
+                    if (!currentUser.Admin)
+                    {
+                        return RedirectToAction("Index", "Home");
+                    }
+                    else
+                    {
+                        List<Contestant> contestants = _context.Contestant.Where(c => c.UserId == user.Id).ToList();
+                        foreach (var contestant in contestants)
+                        {
+                            List<Photo> photos = _context.Photo.Where(p => p.ContestantId == contestant.Id).ToList();
+                            foreach (Photo photo in photos)
+                            {
+                                BlobClient blobClient = _blobContainerClient.GetBlobClient(photo.Name);
+                                blobClient.Delete();
+                                BlobClient blobClientThumb = _blobContainerClient.GetBlobClient(photo.ThumbName);
+                                blobClientThumb.Delete();
+                                _context.Photo.Remove(photo);
+                            }
+                            _context.Contestant.Remove(contestant);
+                        }
+                        
+
+                        _context.Users.Remove(user);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Index", "Home");
+                }
             }
             
             await _context.SaveChangesAsync();

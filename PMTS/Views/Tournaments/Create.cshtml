@@ -13,7 +13,7 @@
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="Name" class="control-label">Pavadinimas <em style="color:indianred;">- sukūrus turnyrą šio nustatymo keisti negalima!</em></label>
+                <label asp-for="Name" class="control-label">Pavadinimas </label>
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
@@ -24,18 +24,18 @@
             </div>
             
             <div class="form-group">
-                <label id="PointsLabel" asp-for="DefaultPoints" class="control-label">Vieno paukščio taškų vertė <em style="color:indianred;">- turnyrui prasidėjus, šio nustatymo keisti negalima!</em></label>
+                <label id="PointsLabel" asp-for="DefaultPoints" class="control-label">Vieno paukščio taškų vertė </label>
                 <input asp-for="DefaultPoints" class="form-control" />
                 <span asp-validation-for="DefaultPoints" class="text-danger"></span>
             </div>
             
             <div class="form-group">
-                <label asp-for="StartTime" class="control-label">Pradžia <em style="color:indianred;">- sukūrus turnyrą šio nustatymo keisti negalima!</em></label>
+                <label asp-for="StartTime" class="control-label">Pradžia </label>
                 <input asp-for="StartTime" class="form-control" />
                 <span asp-validation-for="StartTime" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="EndTime" class="control-label">Pabaiga <em style="color:indianred;">- sukūrus turnyrą šio nustatymo keisti negalima!</em></label>
+                <label asp-for="EndTime" class="control-label">Pabaiga </label>
                 <input asp-for="EndTime" class="form-control" />
                 <span asp-validation-for="EndTime" class="text-danger"></span>
             </div>

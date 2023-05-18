@@ -147,7 +147,7 @@ namespace PMTS.Controllers
                     if(tournament.IsPrivate)
                     {
                         //jei privatus turnyras, tikrinama ar naudotojas yra dalyvis, rengejas
-                        if (!((_context.Contestant.FirstOrDefault(m => m.UserId == user.Id && m.TournamentId == tournament.Id) != null) || tournament.UserId == user.Id || !user.Admin))
+                        if (!((_context.Contestant.FirstOrDefault(m => m.UserId == user.Id && m.TournamentId == tournament.Id) != null) || tournament.UserId == user.Id || user.Admin))
                         {
                             return RedirectToAction("Index", "Home");
                         }
@@ -156,6 +156,10 @@ namespace PMTS.Controllers
                     if (tournament.Organizer == user.Name)
                     {
                         TempData["Organizer"] = "True";
+                    }
+                    if (user.Admin)
+                    {
+                        TempData["IsAdmin"] = "True";
                     }
                     else
                     {
@@ -990,7 +994,32 @@ namespace PMTS.Controllers
                 return NotFound();
             }
 
-            return View(tournament);
+            try
+            {
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User user = GetUser(int.Parse(validatedToken.Issuer));
+                if (user == null)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Index", "Home");
+                }
+                if (!user.Admin && tournament.UserId != user.Id)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+                    return View(tournament);
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Index", "Home");
+            }
+
+            
         }
 
         // POST: Tournaments/Delete/5
@@ -1002,10 +1031,45 @@ namespace PMTS.Controllers
             {
                 return Problem("Entity set 'PSQLcontext.Tournament'  is null.");
             }
+
+
             var tournament = await _context.Tournament.FindAsync(id);
+
             if (tournament != null)
             {
-                _context.Tournament.Remove(tournament);
+                try
+                {
+                    string cookie = Request.Cookies["userCookie"];
+                    JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                    User user = GetUser(int.Parse(validatedToken.Issuer));
+                    if (user == null)
+                    {
+                        TempData["AuthStatus"] = "AuthError";
+                        return RedirectToAction("Index", "Home");
+                    }
+                    if (!user.Admin && tournament.UserId != user.Id)
+                    {
+                        return RedirectToAction("Index", "Home");
+                    }
+                    else
+                    {
+                        List<Photo> photos = _context.Photo.Where(p => p.TournamentId == tournament.Id).ToList();
+                        foreach (Photo photo in photos)
+                        {
+                            BlobClient blobClient = _blobContainerClient.GetBlobClient(photo.Name);
+                            blobClient.Delete();
+                            BlobClient blobClientThumb = _blobContainerClient.GetBlobClient(photo.ThumbName);
+                            blobClientThumb.Delete();
+                        }
+                        _context.Tournament.Remove(tournament);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Index", "Home");
+                }
+                
             }
 
             await _context.SaveChangesAsync();

@@ -11,18 +11,6 @@
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
-            Ar privatus?
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsPrivate)
-        </dd>
-        <dt class = "col-sm-2">
-            Ar turnyras aktyvus?
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Active)
-        </dd>
-        <dt class = "col-sm-2">
             Pradžia
         </dt>
         <dd class = "col-sm-10">
@@ -57,9 +45,15 @@
                 <br />
 
             }
+            if (TempData["IsAdmin"] == "True")
+            {
+                <a asp-action="Delete" asp-route-id="@Model?.Id">Trinti</a>
+                <br />
+
+            }
             else
             {
-                if (TempData["IsContestant"] == "False")
+                if (TempData["IsContestant"] == "False" && TempData["IsAdmin"] != "True")
                 {
                     <form asp-action="Join">
                         <input type="hidden" asp-for="Id" />

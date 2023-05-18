@@ -1,48 +1,30 @@
 ﻿@model PMTS.Models.Tournament
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Turnyro trynimas";
 }
 
-<h1>Delete</h1>
+<h1>Trinti turnyrą</h1>
 
-<h3>Are you sure you want to delete this?</h3>
+<h3>Ar tikrai norite ištrinti šį turnyrą?</h3>
 <div>
     <h4>Tournament</h4>
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
+            Pavadinimas
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Name)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsPrivate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsPrivate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.RestrictedTypes)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.RestrictedTypes)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Active)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Active)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.StartTime)
+            Pradžia
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.StartTime)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.EndTime)
+            Pabaiga
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.EndTime)
@@ -51,7 +33,7 @@
     
     <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
+        <input type="submit" value="Trinti" class="btn btn-danger" /> |
+        <a asp-action="Index">Grįžti</a>
     </form>
 </div>
