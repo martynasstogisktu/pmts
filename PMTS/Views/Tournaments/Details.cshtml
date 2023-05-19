@@ -7,7 +7,14 @@
 <h1>@Html.DisplayFor(model => model.Name)</h1>
 
 <div>
-    <h4>Turnyras</h4>
+    @if(Model.IsPrivate)
+    {
+        <h4>Privatus turnyras</h4>
+    }
+    else
+    {
+        <h4>Viešas turnyras</h4>
+    }
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
@@ -22,6 +29,30 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.EndTime)
         </dd>
+        @if(Model.Active)
+        {
+            <dt class="col-sm-2">
+                Turnyras aktyvus
+            </dt>
+            @if(Model.Ongoing)
+            {
+                <dd class="col-sm-10">
+                    Turnyras prasidėjęs
+                </dd>
+            }
+            else
+            {
+                <dd class="col-sm-10">
+                    Turnyras dar neprasidėjęs
+                </dd>
+            }
+        }
+        else
+        {
+            <dt class="col-sm-2">
+                Turnyras neaktyvus
+            </dt>
+        }
     </dl>
 </div>
 <div>
@@ -76,7 +107,7 @@
         if (Model.Contestants != null)
         {
             var orderedList = Model.Contestants.OrderByDescending(contestant => contestant.Points);
-            <h3>Dalyviai</h3>
+            <h4>Dalyviai</h4>
             <table class="table">
                 <thead>
                     <tr>

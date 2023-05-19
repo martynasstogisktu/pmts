@@ -363,7 +363,30 @@ namespace PMTS.Controllers
             {
                 return NotFound();
             }
-            return View(user);
+            try
+            {
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User currentUser = GetUser(int.Parse(validatedToken.Issuer));
+                if (currentUser == null)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Index", "Home");
+                }
+                if (!currentUser.Admin)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+                    return View(user);
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         // POST: Users/Edit/5
@@ -377,28 +400,51 @@ namespace PMTS.Controllers
             {
                 return NotFound();
             }
-
-            if (ModelState.IsValid)
+            try
             {
-                try
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User currentUser = GetUser(int.Parse(validatedToken.Issuer));
+                if (currentUser == null)
                 {
-                    _context.Update(user);
-                    await _context.SaveChangesAsync();
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Index", "Home");
                 }
-                catch (DbUpdateConcurrencyException)
+                if (!currentUser.Admin)
                 {
-                    if (!UserExists(user.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    return RedirectToAction("Index", "Home");
                 }
-                return RedirectToAction(nameof(Index));
+                else
+                {
+
+                    if (ModelState.IsValid)
+                    {
+                        try
+                        {
+                            _context.Update(user);
+                            await _context.SaveChangesAsync();
+                        }
+                        catch (DbUpdateConcurrencyException)
+                        {
+                            if (!UserExists(user.Id))
+                            {
+                                return NotFound();
+                            }
+                            else
+                            {
+                                throw;
+                            }
+                        }
+                        return RedirectToAction(nameof(Index));
+                    }
+                    return View(user);
+                }
             }
-            return View(user);
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         // GET: Users/Delete/5
@@ -501,6 +547,114 @@ namespace PMTS.Controllers
             
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        // GET: Users/Photos/5
+        public async Task<IActionResult> Photos(int? id)
+        {
+            if (id == null || _context.Tournament == null || _context.Users == null)
+            {
+                return NotFound();
+            }
+
+            var photoUser = await _context.Users.FindAsync(id);
+            if (photoUser == null)
+            {
+                return NotFound();
+            }
+            //try
+            //{
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User user = GetUser(int.Parse(validatedToken.Issuer));
+                if (user == null)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Index", "Home");
+                }
+                if (!user.Admin)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+                    List<Photo> userPhotos = new List<Photo>();
+                    List<Contestant> contestants = _context.Contestant.Where(c => c.UserId == photoUser.Id).ToList();
+                    foreach (var contestant in contestants)
+                    {
+                        List<Photo> photos = _context.Photo.Where(p => p.ContestantId == contestant.Id).ToList();
+                        foreach (Photo photo in photos)
+                        {
+                            userPhotos.Add(photo);
+                        }
+                    }
+
+                    return View(userPhotos);
+                }
+            //}
+            //catch (Exception ex)
+            //{
+            //    TempData["AuthStatus"] = "AuthError";
+            //    return RedirectToAction("Privacy", "Home");
+            //}
+
+        }
+
+        // POST: Users/DeleteUserPhoto/5
+        //[ValidateAntiForgeryToken]
+        //[HttpPost, ActionName("DeleteUserPhoto")]
+        public async Task<IActionResult> DeleteUserPhoto(int? id)
+        {
+            if (_context.Tournament == null || _context.Users == null || id == null)
+            {
+                return NotFound();
+            }
+
+
+            var photo = _context.Photo.FirstOrDefault(e => e.Id == id);
+            var tournament = await _context.Tournament.FindAsync(photo.TournamentId);
+            if (tournament == null)
+            {
+                return NotFound();
+            }
+            if (photo == null)
+            {
+                TempData["ConfirmStatus"] = "ConfirmFailed";
+                return RedirectToAction("CheckPhoto", new { Id = tournament.Id });
+            }
+            try
+            {
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User user = GetUser(int.Parse(validatedToken.Issuer));
+                if (user == null)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Index", "Home");
+                }
+                if (!user.Admin)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+                    Contestant contestant = _context.Contestant.FirstOrDefault(e => e.Id == photo.ContestantId);
+                    BlobClient blobClient = _blobContainerClient.GetBlobClient(photo.Name);
+                    blobClient.Delete();
+                    BlobClient blobClientThumb = _blobContainerClient.GetBlobClient(photo.ThumbName);
+                    blobClientThumb.Delete();
+                    contestant.Points -= photo.Points;
+                    _context.Photo.Remove(photo);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction("Index", "Users");
+
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         public bool UserExists(int id)

@@ -22,6 +22,15 @@
                     <th>
                         Bendras nuotraukos taškų kiekis
                     </th>
+                    @if (TempData["CanDelete"] == "True")
+                    {
+                        <th>
+                            
+                        </th>
+                    }
+                    <th>
+
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -41,6 +50,20 @@
                             <td>
                                 @item.Points
                             </td>
+                            @if(TempData["CanDelete"] == "True")
+                            {
+                                <td>
+                                    <a asp-action="DeleteContestantPhoto" asp-route-id="@item.Id">
+                                        Trinti
+                                    </a>
+                                </td>
+                            }
+                            <td>
+                                <a asp-action="DeleteContestantPhoto" asp-route-id="@item.Id">
+                                    Trinti
+                                </a>
+                            </td>
+                            
                         </tr>
                     }
                     

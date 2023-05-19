@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PMTS.Authentication;
 using PMTS.Models;
@@ -15,6 +16,10 @@ builder.Services.AddScoped<PmtsJwt>();
 
 //builder.Services.AddDbContext<PSQLcontext>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("AzureDB")));
 builder.Services.AddDbContext<PSQLcontext>(options => options.UseNpgsql("Host=localhost;Database=PMTS;Username=postgres;Password=VG$2zcF1&kLXS@JFaY"));
+
+builder.Services.Configure<CookieTempDataProviderOptions>(options => {
+    options.Cookie.IsEssential = true;
+});
 
 var app = builder.Build();
 
