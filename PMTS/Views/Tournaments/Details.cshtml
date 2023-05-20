@@ -76,12 +76,6 @@
                 <br />
 
             }
-            if (TempData["IsAdmin"] == "True")
-            {
-                <a asp-action="Delete" asp-route-id="@Model?.Id">Trinti</a>
-                <br />
-
-            }
             else
             {
                 if (TempData["IsContestant"] == "False" && TempData["IsAdmin"] != "True")
@@ -97,6 +91,13 @@
                     <input type="hidden" asp-for="Id" />
                     <input type="button" value="Įkelti nuotrauką" class="btn btn-primary" onclick="window.location.href='@Url.Action("AddPhoto", new { Id = Model?.Id })';" />
                 }
+
+            }
+
+            if (TempData["IsAdmin"] == "True")
+            {
+                <a asp-action="Delete" asp-route-id="@Model?.Id">Trinti</a>
+                <br />
 
             }
         }

@@ -154,7 +154,7 @@ namespace PMTS.Controllers
                         }
                     }
                     TempData["LoggedIn"] = "True";
-                    if (tournament.Organizer == user.Name)
+                    if (tournament.UserId == user.Id)
                     {
                         TempData["Organizer"] = "True";
                     }
@@ -257,47 +257,43 @@ namespace PMTS.Controllers
             }
 
             _context.Contestant.Include(contestant => contestant.Photos).ToList();
-
-            if(!tournament.IsPrivate)
+                            
+            try
             {
-                return View(contestant);
-            }
-
-            else
-            {
-                //jei privatus turnyras, perziureti galima tik prisijungus ir jame dalyvaujant
-                //try
-                //{
-                    if (Request.Cookies["userCookie"] != null)
+                if (Request.Cookies["userCookie"] != null)
+                {
+                    string cookie = Request.Cookies["userCookie"];
+                    JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                    User user = GetUser(int.Parse(validatedToken.Issuer));
+                    if (user.Admin || tournament.UserId == user.Id)
                     {
-                        string cookie = Request.Cookies["userCookie"];
-                        JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
-                        User user = GetUser(int.Parse(validatedToken.Issuer));
-                        if (user.Admin || tournament.UserId == user.Id)
-                        {
-                            TempData["CanDelete"] = "True";
-                            //ViewBag.Admin = true;
-                        }
+                        TempData["CanDelete"] = "True";
+                    }
+                    if (!tournament.IsPrivate)
+                    {
+                        return View(contestant);
+                    }
 
-                        if ((_context.Contestant.FirstOrDefault(m => m.UserId == user.Id && m.TournamentId == tournament.Id) != null) || tournament.UserId == user.Id || user.Admin)
-                        {
-                            TempData["CanDelete"] = "True";
-                            return View(contestant);
-                        }
-                        else
-                        {
-                            return RedirectToAction("Index", "Home");
-                        }
+                    //jei privatus turnyras, perziureti galima tik prisijungus ir jame dalyvaujant
+                    if ((_context.Contestant.FirstOrDefault(m => m.UserId == user.Id && m.TournamentId == tournament.Id) != null) || tournament.UserId == user.Id || user.Admin)
+                    {
+                        TempData["CanDelete"] = "True";
+                        return View(contestant);
                     }
                     else
+                    {
                         return RedirectToAction("Index", "Home");
-                //}
-                //catch (Exception ex)
-                //{
-                //    TempData["AuthStatus"] = "AuthError";
-                //    return RedirectToAction("Index", "Home");
-                //}
+                    }
+                }
+                else
+                    return RedirectToAction("Index", "Home");
             }
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Index", "Home");
+            }
+            
 
         }
 
