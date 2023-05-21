@@ -133,11 +133,12 @@ namespace PMTS.Controllers
                 tournament.Ongoing = false;
             }
 
-            //Ongoing = true - turnyre galima dalyvauti
-            //Ongoing = false - turnyre negalima dalyvauti (bagesi arba buvo nutrauktas)
+            //Active = true, Ongoing = false - galima prisijungti bet dar negalima kelti nuotrauku
+            //Ongoing = true - turnyre galima dalyvauti ir kelti nuotraukas
+            //Active = false - turnyre negalima dalyvauti (bagesi arba buvo nutrauktas)
 
             _context.Tournament.Include(tournament => tournament.Contestants).ToList();
-
+            
             try
             {
                 if (Request.Cookies["userCookie"] != null)
@@ -145,32 +146,28 @@ namespace PMTS.Controllers
                     string cookie = Request.Cookies["userCookie"];
                     JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
                     User user = GetUser(int.Parse(validatedToken.Issuer));
-                    if(tournament.IsPrivate)
-                    {
-                        //jei privatus turnyras, tikrinama ar naudotojas yra dalyvis, rengejas
-                        if (!((_context.Contestant.FirstOrDefault(m => m.UserId == user.Id && m.TournamentId == tournament.Id) != null) || tournament.UserId == user.Id || user.Admin))
-                        {
-                            return RedirectToAction("Index", "Home");
-                        }
-                    }
+                    
                     TempData["LoggedIn"] = "True";
                     if (tournament.UserId == user.Id)
                     {
                         TempData["Organizer"] = "True";
                     }
-                    if (user.Admin)
-                    {
-                        TempData["IsAdmin"] = "True";
-                    }
                     else
                     {
                         TempData["Organizer"] = "False";
                     }
+                    if (user.Admin)
+                    {
+                        TempData["IsAdmin"] = "True";
+                    }
                     if (!_context.Contestant.IsNullOrEmpty())
                     {
-                        if (_context.Contestant.FirstOrDefault(m => m.UserId == user.Id && m.TournamentId == tournament.Id) != null)
+                        var contestant = _context.Contestant.FirstOrDefault(m => m.UserId == user.Id && m.TournamentId == tournament.Id);
+                        if (contestant != null)
                         {
                             TempData["IsContestant"] = "True";
+                            if (contestant.Removed)
+                                TempData["Removed"] = "True";
                         }
                         else
                         {
@@ -180,6 +177,14 @@ namespace PMTS.Controllers
                     else
                     {
                         TempData["IsContestant"] = "False";
+                    }
+                    if (tournament.IsPrivate)
+                    {
+                        //jei privatus turnyras, tikrinama ar naudotojas yra dalyvis, rengejas
+                        if (!((_context.Contestant.FirstOrDefault(m => m.UserId == user.Id && m.TournamentId == tournament.Id) != null) || tournament.UserId == user.Id || user.Admin))
+                        {
+                            return RedirectToAction("Index", "Home");
+                        }
                     }
                 }
                 else
@@ -195,14 +200,6 @@ namespace PMTS.Controllers
                 TempData["LoggedIn"] = "False";
                 if(tournament.IsPrivate)
                     return RedirectToAction("Index", "Home");
-            }
-            if(tournament.RestrictedTypes)
-            {
-                TempData["RestrictedTypes"] = "True";
-            }
-            else
-            {
-                TempData["RestrictedTypes"] = "False";
             }
             return View(tournament);
         }
@@ -265,19 +262,18 @@ namespace PMTS.Controllers
                     string cookie = Request.Cookies["userCookie"];
                     JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
                     User user = GetUser(int.Parse(validatedToken.Issuer));
-                    if (user.Admin || tournament.UserId == user.Id)
+                    if (user.Admin || tournament.UserId == user.Id || contestant.UserId == user.Id)
                     {
                         TempData["CanDelete"] = "True";
                     }
-                    if (!tournament.IsPrivate)
+                    
+                    //jei privatus turnyras, perziureti galima tik prisijungus ir jame dalyvaujant arba esant turnyro rengeju ar administratoriumi
+                    if ((_context.Contestant.FirstOrDefault(m => m.UserId == user.Id && m.TournamentId == tournament.Id) != null) || tournament.UserId == user.Id || user.Admin)
                     {
                         return View(contestant);
                     }
-
-                    //jei privatus turnyras, perziureti galima tik prisijungus ir jame dalyvaujant
-                    if ((_context.Contestant.FirstOrDefault(m => m.UserId == user.Id && m.TournamentId == tournament.Id) != null) || tournament.UserId == user.Id || user.Admin)
+                    if (!tournament.IsPrivate)
                     {
-                        TempData["CanDelete"] = "True";
                         return View(contestant);
                     }
                     else
@@ -531,6 +527,114 @@ namespace PMTS.Controllers
                 return RedirectToAction("Index", "Home");
             }
         }
+
+        // Tournaments/RemoveContestantFromTournament/5
+        //[HttpPost, ActionName("RemoveContestantFromTournament")]
+        //[ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveContestantFromTournament(int id)
+        {
+            if (_context.Contestant == null)
+            {
+                return Problem("Entity set 'PSQLcontext.Contestant'  is null.");
+            }
+            var contestant = await _context.Contestant.FindAsync(id);
+            var tournament = await _context.Tournament.Where(t => t.Id == contestant.TournamentId).FirstOrDefaultAsync();
+
+            if (contestant != null)
+            {
+                try
+                {
+                    string cookie = Request.Cookies["userCookie"];
+                    JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                    User currentUser = GetUser(int.Parse(validatedToken.Issuer));
+                    if (currentUser == null)
+                    {
+                        TempData["AuthStatus"] = "AuthError";
+                        return RedirectToAction("Index", "Home");
+                    }
+                    if (!currentUser.Admin && tournament.UserId != currentUser.Id)
+                    {
+                        return RedirectToAction("Index", "Home");
+                    }
+                    else
+                    {
+                        //delete user photos to save space
+                        List<Photo> photos = _context.Photo.Where(p => p.ContestantId == contestant.Id).ToList();
+                        foreach (Photo photo in photos)
+                        {
+                            BlobClient blobClient = _blobContainerClient.GetBlobClient(photo.Name);
+                            blobClient.Delete();
+                            BlobClient blobClientThumb = _blobContainerClient.GetBlobClient(photo.ThumbName);
+                            blobClientThumb.Delete();
+                            _context.Photo.Remove(photo);
+                        }
+
+                        contestant.Removed = true;
+                        contestant.Points = 0;
+                        _context.Contestant.Update(contestant);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Index", "Home");
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Details", new { Id = contestant.TournamentId });
+        }
+
+        // Tournaments/LeaveTournament
+        //[HttpPost, ActionName("LeaveTournament")]
+        //[ValidateAntiForgeryToken]
+        public async Task<IActionResult> LeaveTournament()
+        {
+            if (_context.Contestant == null)
+            {
+                return Problem("Entity set 'PSQLcontext.Contestant'  is null.");
+            }
+            
+            //try
+            //{
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User currentUser = GetUser(int.Parse(validatedToken.Issuer));
+                if (currentUser == null)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Index", "Home");
+                }
+
+                Contestant contestant = await _context.Contestant.Where(t => t.UserId == currentUser.Id).FirstOrDefaultAsync();
+                Tournament tournament = await _context.Tournament.Where(t => t.Id == contestant.TournamentId).FirstOrDefaultAsync();
+                
+                //delete user photos to save space
+                List<Photo> photos = _context.Photo.Where(p => p.ContestantId == contestant.Id).ToList();
+                foreach (Photo photo in photos)
+                {
+                    BlobClient blobClient = _blobContainerClient.GetBlobClient(photo.Name);
+                    blobClient.Delete();
+                    BlobClient blobClientThumb = _blobContainerClient.GetBlobClient(photo.ThumbName);
+                    blobClientThumb.Delete();
+                    _context.Photo.Remove(photo);
+                }
+
+                contestant.Removed = true;
+                contestant.Points = 0;
+                _context.Contestant.Update(contestant);
+
+                await _context.SaveChangesAsync();
+                return RedirectToAction("Details", new { Id = contestant.TournamentId });
+                
+            //}
+            //catch (Exception ex)
+            //{
+            //    TempData["AuthStatus"] = "AuthError";
+            //    return RedirectToAction("Index", "Home");
+            //}
+        }
+
         // GET: Tournaments/CheckPhoto/5
         public async Task<IActionResult> CheckPhoto(int? id)
         {
@@ -671,18 +775,19 @@ namespace PMTS.Controllers
                 string cookie = Request.Cookies["userCookie"];
                 JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
                 User user = GetUser(int.Parse(validatedToken.Issuer));
+
+                Contestant contestant = _context.Contestant.FirstOrDefault(e => e.Id == photo.ContestantId);
                 if (user == null)
                 {
                     TempData["AuthStatus"] = "AuthError";
                     return RedirectToAction("Index", "Home");
                 }
-                if (tournament.UserId != user.Id && !user.Admin)
+                if (tournament.UserId != user.Id && !user.Admin && user.Id != contestant.UserId)
                 {
                     return RedirectToAction("Index", "Home");
                 }
                 else
                 {
-                    Contestant contestant = _context.Contestant.FirstOrDefault(e => e.Id == photo.ContestantId);
                     BlobClient blobClient = _blobContainerClient.GetBlobClient(photo.Name);
                     blobClient.Delete();
                     BlobClient blobClientThumb = _blobContainerClient.GetBlobClient(photo.ThumbName);

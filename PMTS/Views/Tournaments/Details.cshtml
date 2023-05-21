@@ -85,11 +85,15 @@
                         <input type="submit" value="Prisijungti" class="btn btn-primary" asp-action="Join" asp-route-id="@Model?.Id" />
                     </form>
                 }
-                if (TempData["IsContestant"] == "True")
+                if (TempData["IsContestant"] == "True" && TempData["Removed"] != "True")
                 {
                     <p>Dalyvaujate šiame turnyre!</p>
                     <input type="hidden" asp-for="Id" />
                     <input type="button" value="Įkelti nuotrauką" class="btn btn-primary" onclick="window.location.href='@Url.Action("AddPhoto", new { Id = Model?.Id })';" />
+                    <br />
+                    <a asp-action="LeaveTournament">
+                        Išeiti
+                    </a>
                 }
 
             }
@@ -118,6 +122,12 @@
                         <th>
                             Taškai
                         </th>
+                        @if (TempData["Organizer"] == "True" || TempData["IsAdmin"] == "True")
+                        {
+                            <th>
+
+                            </th>
+                        }
                     </tr>
                 </thead>
                 <tbody>
@@ -132,6 +142,14 @@
                                 <td>
                                     @Html.DisplayFor(modelItem => item.Points)
                                 </td>
+                                @if (TempData["Organizer"] == "True" || TempData["IsAdmin"] == "True")
+                                {
+                                    <td>
+                                        <a asp-action="RemoveContestantFromTournament" asp-route-id="@item.Id">
+                                            Pašalinti
+                                        </a>
+                                    </td>
+                                }
                             </tr>
                         }
                     }
