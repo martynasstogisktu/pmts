@@ -15,22 +15,29 @@
             <th>
                 El. paštas
             </th>
-            <th></th>
+            <th>
+                    
+            </th>
+            
         </tr>
     </thead>
     <tbody>
 @foreach (var item in Model) {
         <tr>
             <td>
-                    <a asp-action="Photos" asp-route-id="@item.Id">@Html.DisplayFor(modelItem => item.Name)</a>
+                <a asp-action="Photos" asp-route-id="@item.Id">@Html.DisplayFor(modelItem => item.Name)</a>
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Email)
+            @Html.DisplayFor(modelItem => item.Email)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Koreguoti</a> |
                 <a asp-action="Delete" asp-route-id="@item.Id">Trinti</a>
             </td>
+            @if (false) //edit disabled
+            {
+                <a asp-action="Edit" asp-route-id="@item.Id">Koreguoti</a>
+            }
+            
         </tr>
 }
     </tbody>

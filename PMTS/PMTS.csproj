@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="Views\Users\Photosaaa.cshtml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Azure.Identity" Version="1.8.2" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.16.0" />
     <PackageReference Include="jQuery" Version="3.6.4" />
@@ -30,10 +26,6 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.3" />
     <PackageReference Include="SweetAlert" Version="1.0.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.28.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Views\Users\Photosaaa.cshtml" />
   </ItemGroup>
 
 </Project>
