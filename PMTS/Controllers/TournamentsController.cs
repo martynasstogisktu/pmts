@@ -315,16 +315,7 @@ namespace PMTS.Controllers
                     return RedirectToAction("Index", "Home");
                 }
                 tournament.Organizer = user.Name;
-                //if (!ModelState.IsValid)
-                //{
-                //    foreach (var modelState in ViewData.ModelState.Values)
-                //    {
-                //        foreach (ModelError error in modelState.Errors)
-                //        {
-                //            Console.WriteLine(error.ErrorMessage);
-                //        }
-                //    }
-                //}
+
                 if (ModelState.IsValid)
                 {
                     tournament.StartTime = tournament.StartTime.ToUniversalTime();
@@ -594,9 +585,9 @@ namespace PMTS.Controllers
             {
                 return Problem("Entity set 'PSQLcontext.Contestant'  is null.");
             }
-            
-            //try
-            //{
+
+            try
+            {
                 string cookie = Request.Cookies["userCookie"];
                 JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
                 User currentUser = GetUser(int.Parse(validatedToken.Issuer));
@@ -626,13 +617,13 @@ namespace PMTS.Controllers
 
                 await _context.SaveChangesAsync();
                 return RedirectToAction("Details", new { Id = contestant.TournamentId });
-                
-            //}
-            //catch (Exception ex)
-            //{
-            //    TempData["AuthStatus"] = "AuthError";
-            //    return RedirectToAction("Index", "Home");
-            //}
+
+            }
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         // GET: Tournaments/CheckPhoto/5
@@ -856,22 +847,6 @@ namespace PMTS.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-
-            //test code\/
-            //if (id == null || _context.Tournament == null)
-            //{
-            //    return NotFound();
-            //}
-
-            //var tournament = await _context.Tournament.FindAsync(id);
-            //if (tournament == null)
-            //{
-            //    return NotFound();
-            //}
-
-            //PhotoDTO photoDTO = new PhotoDTO();
-            //photoDTO.TournamentId = (int)id;
-            //return View(photoDTO);
         }
 
         // POST: Tournaments/AddPhoto/5
@@ -929,15 +904,7 @@ namespace PMTS.Controllers
                         // failai nedidesni nei 4 MB
                         if (memoryStream.Length < 4194304)
                         {
-                            //using var stream = System.IO.File.Create("A:/img/photo" + ext);
-                            //stream.Write(memoryStream.ToArray(), 0, memoryStream.ToArray().Length);
                             BinaryData binaryData = new BinaryData(memoryStream.ToArray());
-                            //var file = new AppFile()
-                            //{
-                            //    Content = memoryStream.ToArray()
-                            //};
-
-                            //_dbContext.File.Add(file);
                             if (contestant.Photos == null)
                             {
                                 contestant.Photos = new List<Photo>();
@@ -955,7 +922,7 @@ namespace PMTS.Controllers
                             string fileName = photo.Id.ToString() + ext;
                             string thumbFileName = photo.Id.ToString() + "_thumb" + ext;
 
-                            await UploadBlob(photo.Id, fileName, thumbFileName, binaryData); //nelaukia kol ikelimas baigiamas
+                            await UploadBlob(photo.Id, fileName, thumbFileName, binaryData);
 
                             TempData["PhotoAdded"] = "True";
                             return RedirectToAction("Details", new { Id = id });
@@ -980,55 +947,6 @@ namespace PMTS.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            //test code
-            //string cookie = Request.Cookies["userCookie"];
-            //JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
-            //User user = GetUser(int.Parse(validatedToken.Issuer));
-
-            //if (_context.Contestant.FirstOrDefault(m => m.UserName == user.Name && m.TournamentName == tournament.Name) != null)
-            //{
-            //    string[] permittedExtensions = { ".jpg", ".jpeg", ".png", ".bmp" };
-            //    var ext = Path.GetExtension(photoDTO.PhotoData.FileName);
-            //    if (string.IsNullOrEmpty(ext) || !permittedExtensions.Contains(ext))
-            //    {
-            //        ModelState.AddModelError("PhotoData", "Failo tipas netinkamas.");
-            //        return View(id);
-            //    }
-
-            //    //jei naudotojas yra turnyro dalyvis
-            //    using (var memoryStream = new MemoryStream())
-            //    {
-            //        await photoDTO.PhotoData.CopyToAsync(memoryStream);
-
-            //        // failai nedidesni nei 4 MB
-            //        if (memoryStream.Length < 4194304)
-            //        {
-            //            using var stream = System.IO.File.Create("A:/img/photo" + ext);
-            //            stream.Write(memoryStream.ToArray(), 0, memoryStream.ToArray().Length);
-            //            //var file = new AppFile()
-            //            //{
-            //            //    Content = memoryStream.ToArray()
-            //            //};
-
-            //            //_dbContext.File.Add(file);
-
-            //            //await _dbContext.SaveChangesAsync();
-            //            TempData["PhotoAdded"] = "True";
-            //            return RedirectToAction("Details", new { Id = id });
-            //        }
-            //        else
-            //        {
-            //            ModelState.AddModelError("PhotoData", "Failo tipas netinkamas.");
-            //            return View(id);
-            //        }
-            //    }
-            //}
-            //else
-            //{
-            //    //jei ne dalyvis, grazina i turnyro aprasyma
-            //    //joks pranesimas nenurodomas, nes ikelimo puslapis neturi buti pasiekiamams naudotojams nedalyvaujantiems turnyre
-            //    return RedirectToAction("Details", new { Id = id });
-            //}
         }
 
         private async Task UploadBlob(int id, string name, string thumbName, BinaryData binaryData)
