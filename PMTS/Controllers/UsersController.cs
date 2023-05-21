@@ -106,9 +106,6 @@ namespace PMTS.Controllers
 
             if (!ModelState.IsValid)
             {
-                //_context.Add(user);
-                //await _context.SaveChangesAsync();
-                //return RedirectToAction(nameof(Index));
                 return View();
             }
             user.Admin = false;
@@ -230,21 +227,12 @@ namespace PMTS.Controllers
                     ModelState.AddModelError("Password", "Slaptažodis neteisingas.");
                     TempData["LoginStatus"] = "LoginFailed";
                 }
-                //if (user.Password != login.Password)
-                //{
-                //    ModelState.AddModelError("Password", "Slaptažodis neteisingas.");
-                //    TempData["LoginStatus"] = "LoginFailed";
-                //}
             } 
 
             if (!ModelState.IsValid)
             {
-                //_context.Add(user);
-                //await _context.SaveChangesAsync();
-                //return RedirectToAction(nameof(Index));
                 return View();
             }
-            //psql for salt: UPDATE public."Users" Set "Password" = crypt('slaptazodis123', gen_salt('bf')) WHERE public."Users"."Id" = 1;
 
             string cookie = _pmtsJwt.Create(user.Id);
             Response.Cookies.Append("userCookie", cookie, new CookieOptions
@@ -394,7 +382,7 @@ namespace PMTS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Name,Email,Password")] User user)
+        public async Task<IActionResult> Edit(int id, [Bind("Name,Email")] User user)
         {
             if (id != user.Id)
             {
@@ -562,8 +550,8 @@ namespace PMTS.Controllers
             {
                 return NotFound();
             }
-            //try
-            //{
+            try
+            {
                 string cookie = Request.Cookies["userCookie"];
                 JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
                 User user = GetUser(int.Parse(validatedToken.Issuer));
@@ -591,16 +579,16 @@ namespace PMTS.Controllers
 
                     return View(userPhotos);
                 }
-            //}
-            //catch (Exception ex)
-            //{
-            //    TempData["AuthStatus"] = "AuthError";
-            //    return RedirectToAction("Privacy", "Home");
-            //}
+            }
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Privacy", "Home");
+            }
 
         }
 
-        // POST: Users/DeleteUserPhoto/5
+        // Users/DeleteUserPhoto/5
         //[ValidateAntiForgeryToken]
         //[HttpPost, ActionName("DeleteUserPhoto")]
         public async Task<IActionResult> DeleteUserPhoto(int? id)

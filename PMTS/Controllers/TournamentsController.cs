@@ -795,7 +795,7 @@ namespace PMTS.Controllers
                     contestant.Points -= photo.Points;
                     _context.Photo.Remove(photo);
                     await _context.SaveChangesAsync();
-                    return RedirectToAction("Index", "Tournaments");
+                    return RedirectToAction("Details", new { Id = photo.TournamentId });
 
                 }
             }
