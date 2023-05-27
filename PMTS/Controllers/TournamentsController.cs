@@ -739,7 +739,7 @@ namespace PMTS.Controllers
             }
         }
 
-        // POST: Tournaments/DeleteContestantPhoto/5
+        // Tournaments/DeleteContestantPhoto/5
         //[ValidateAntiForgeryToken]
         //[HttpPost, ActionName("DeleteContestantPhoto")]
         public async Task<IActionResult> DeleteContestantPhoto(int? id)

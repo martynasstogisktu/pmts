@@ -29,10 +29,26 @@
                         <input type="password" asp-for="Password" class="form-control" />
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
-                    <div class="form-group">
-                        <input type="submit" value="Registruotis" class="btn btn-primary" />
-                    </div>
-                </form>
+                @if (TempData["RegisterEnabled"] != null)
+                {
+                    @if (TempData["RegisterEnabled"].Equals("false"))
+                    {
+
+                        <p><b>Registracija išjungta</b></p>
+                    }
+                    else
+                    {
+                        <div class="form-group">
+                            <input type="submit" value="Registruotis" class="btn btn-primary" />
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p><b>Registracija išjungta</b></p>
+                }
+                
+            </form>
             </div>
         </div>
     }

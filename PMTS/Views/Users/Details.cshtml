@@ -21,12 +21,32 @@
             @Html.DisplayFor(model => model.Email)
         </dd>
     </dl>
+    
+</div>
+<div>
     @if (TempData["IsAdmin"] == "true")
     {
         <p><b>Naudotojas yra administratorius</b></p>
+        @if (TempData["RegisterEnabled"] != null)
+        {
+            @if (TempData["RegisterEnabled"].Equals("true"))
+            {
+                <p><b>Registracija įjungta</b></p>
+                <input type="button" value="Išjungti registraciją" class="btn btn-primary" onclick="window.location.href='@Url.Action("ChangeRegistration")';" />
+            }
+            @if (TempData["RegisterEnabled"].Equals("false"))
+            {
+                <p><b>Registracija išjungta</b></p>
+                <input type="button" value="Įjungti registraciją" class="btn btn-primary" onclick="window.location.href='@Url.Action("ChangeRegistration")';" />
+            }
+        }
+        else
+        {
+            <p><b>Registracija išjungta</b></p>
+            <input type="button" value="Įjungti registraciją" class="btn btn-primary" onclick="window.location.href='@Url.Action("ChangeRegistration")';" />
+        }
+
     }
-</div>
-<div>
     @if (TempData["IsAdmin"] == "false")
     {
         <a asp-controller="Tournaments" asp-action="MyTournaments">Mano turnyrai</a>

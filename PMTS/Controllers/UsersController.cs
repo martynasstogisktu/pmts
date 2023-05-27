@@ -69,6 +69,7 @@ namespace PMTS.Controllers
                 {
                     //mygtukas "Mano turnyrai" neatvaizduojamas administratoriams
                     TempData["IsAdmin"] = "true";
+                    TempData["RegisterEnabled"] = Environment.GetEnvironmentVariable("RegisterEnabled");
                 }
                 else
                     TempData["IsAdmin"] = "false";
@@ -85,6 +86,8 @@ namespace PMTS.Controllers
         [Route("Register")]
         public IActionResult Register()
         {
+            TempData["RegisterEnabled"] = "false";
+            TempData["RegisterEnabled"] = Environment.GetEnvironmentVariable("RegisterEnabled");
             return View();
         }
 
@@ -96,24 +99,66 @@ namespace PMTS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register([Bind("Name,Email,Password")] User user)
         {
-            //visada grazina kad el. pastas arba vardas uzimtas (o ne kuris is ju), kad atskleistu maziau info
-            if (GetUser(user.Name) != null || GetUserByEmail(user.Email) != null)
+            if(Environment.GetEnvironmentVariable("RegisterEnabled") == "true")
             {
-                ModelState.AddModelError("Name", "Naudotojas nurodytu vardu ar el. paštu jau egzistuoja.");
-                ModelState.AddModelError("Email", "Naudotojas nurodytu vardu ar el. paštu jau egzistuoja.");
-                TempData["RegisterStatus"] = "RegisterFailed";
-            }
+                //visada grazina kad el. pastas arba vardas uzimtas (o ne kuris is ju), kad atskleistu maziau info
+                if (GetUser(user.Name) != null || GetUserByEmail(user.Email) != null)
+                {
+                    ModelState.AddModelError("Name", "Naudotojas nurodytu vardu ar el. paštu jau egzistuoja.");
+                    ModelState.AddModelError("Email", "Naudotojas nurodytu vardu ar el. paštu jau egzistuoja.");
+                    TempData["RegisterStatus"] = "RegisterFailed";
+                }
 
-            if (!ModelState.IsValid)
-            {
-                return View();
+                if (!ModelState.IsValid)
+                {
+                    return View();
+                }
+                user.Admin = false;
+                user.Password = _context.Helper.FromSql($"SELECT crypt({user.Password}, gen_salt('bf', 8));").ToList().FirstOrDefault().crypt;
+                _context.Add(user);
+                await _context.SaveChangesAsync();
+                TempData["RegisterStatus"] = "RegisterSuccess";
             }
-            user.Admin = false;
-            user.Password = _context.Helper.FromSql($"SELECT crypt({user.Password}, gen_salt('bf', 8));").ToList().FirstOrDefault().crypt;
-            _context.Add(user);
-            await _context.SaveChangesAsync();
-            TempData["RegisterStatus"] = "RegisterSuccess";
+            
             return View();
+        }
+        // Users/ChangeRegistration
+        //[ValidateAntiForgeryToken]
+        //[HttpPost, ActionName("ChangeRegistration")]
+        public async Task<IActionResult> ChangeRegistration()
+        {
+            try
+            {
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User user = GetUser(int.Parse(validatedToken.Issuer));
+
+                if (user == null)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Index", "Home");
+                }
+                if (!user.Admin)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+                    if (Environment.GetEnvironmentVariable("RegisterEnabled") == "true")
+                    {
+                        Environment.SetEnvironmentVariable("RegisterEnabled", "false");
+                    }
+                    else
+                        Environment.SetEnvironmentVariable("RegisterEnabled", "true");
+                    return RedirectToAction("Details");
+
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         [Route("RegisterAdmin")]
@@ -145,7 +190,7 @@ namespace PMTS.Controllers
             }
         }
 
-        // POST: Register
+        // POST: RegisterAdmin
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [Route("RegisterAdmin")]
