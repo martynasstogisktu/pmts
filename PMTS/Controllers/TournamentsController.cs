@@ -139,7 +139,11 @@ namespace PMTS.Controllers
 
             if(tournament.Active)
             {
-                TempData["Joinable"] = "True";
+                TempData["Active"] = "True";
+            }
+            if(tournament.Ongoing)
+            {
+                TempData["Ongoing"] = "True";
             }
 
             _context.Tournament.Include(tournament => tournament.Contestants).ToList();
