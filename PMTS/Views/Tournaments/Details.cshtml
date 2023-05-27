@@ -78,7 +78,7 @@
             }
             else
             {
-                if (TempData["IsContestant"] == "False" && TempData["IsAdmin"] != "True")
+                if (TempData["IsContestant"] == "False" && TempData["IsAdmin"] != "True" && TempData["Active"] == "True")
                 {
                     <form asp-action="Join">
                         <input type="hidden" asp-for="Id" />
@@ -88,9 +88,13 @@
                 if (TempData["IsContestant"] == "True" && TempData["Removed"] != "True")
                 {
                     <p>Dalyvaujate šiame turnyre!</p>
-                    <input type="hidden" asp-for="Id" />
-                    <input type="button" value="Įkelti nuotrauką" class="btn btn-primary" onclick="window.location.href='@Url.Action("AddPhoto", new { Id = Model?.Id })';" />
-                    <br />
+                    if (TempData["Ongoing"] == "True")
+                    {
+                        <input type="hidden" asp-for="Id" />
+                        <input type="button" value="Įkelti nuotrauką" class="btn btn-primary" onclick="window.location.href='@Url.Action("AddPhoto", new { Id = Model?.Id })';" />
+                        <br />
+                    }
+                    
                     <a asp-action="LeaveTournament">
                         Išeiti
                     </a>

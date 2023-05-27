@@ -137,6 +137,11 @@ namespace PMTS.Controllers
             //Ongoing = true - turnyre galima dalyvauti ir kelti nuotraukas
             //Active = false - turnyre negalima dalyvauti (bagesi arba buvo nutrauktas)
 
+            if(tournament.Active)
+            {
+                TempData["Joinable"] = "True";
+            }
+
             _context.Tournament.Include(tournament => tournament.Contestants).ToList();
             
             try
