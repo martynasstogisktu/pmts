@@ -146,6 +146,8 @@ namespace PMTS.Controllers
                 TempData["Ongoing"] = "True";
             }
 
+            TempData["OrganizerName"] = tournament.Organizer;
+
             _context.Tournament.Include(tournament => tournament.Contestants).ToList();
             
             try

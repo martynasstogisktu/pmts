@@ -15,6 +15,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<PmtsJwt>();
 
 builder.Services.AddDbContext<PSQLcontext>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("AzureDB")));
+
 Environment.SetEnvironmentVariable("RegisterEnabled", "true");
 
 builder.Services.Configure<CookieTempDataProviderOptions>(options => {

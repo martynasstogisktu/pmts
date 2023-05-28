@@ -48,6 +48,10 @@ namespace PMTS.Models
 
         public bool Admin { get; set; } = false; //admin or user
 
+        public DateTime BlockTime { get; set; } = DateTime.MinValue;
+
+        public int FailedLogins { get; set; } = 0;
+
         public List<Tournament>? Tournaments { get; set; }
     }
 }

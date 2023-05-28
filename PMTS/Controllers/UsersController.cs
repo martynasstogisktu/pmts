@@ -264,6 +264,12 @@ namespace PMTS.Controllers
                 ModelState.AddModelError("Name", "Naudotojas nurodytu vardu nerastas.");
                 TempData["LoginStatus"] = "LoginFailed";
             }
+            else if (user.FailedLogins >= 3 && user.BlockTime.AddMinutes(1).ToUniversalTime() > DateTime.Now.ToUniversalTime())
+            {
+                TempData["LoginBlocked"] = "true";
+                TempData["LoginTime"] = ((int)(user.BlockTime.AddMinutes(1).ToUniversalTime() - DateTime.Now.ToUniversalTime()).TotalSeconds).ToString();
+                return View();
+            }
             else
             {
                 string helper = _context.Helper.FromSql($"SELECT crypt({login.Password}, {user.Password});").ToList().FirstOrDefault().crypt;
@@ -271,6 +277,13 @@ namespace PMTS.Controllers
                 {
                     ModelState.AddModelError("Password", "Slaptažodis neteisingas.");
                     TempData["LoginStatus"] = "LoginFailed";
+                    user.FailedLogins++;
+                    if (user.FailedLogins >= 3)
+                    {
+                        user.BlockTime = DateTime.Now.ToUniversalTime();
+                    }
+                    _context.Users.Update(user);
+                    _context.SaveChanges();
                 }
             } 
 
@@ -279,6 +292,11 @@ namespace PMTS.Controllers
                 return View();
             }
 
+            
+            //login successful
+            user.FailedLogins = 0;
+            _context.Users.Update(user);
+            _context.SaveChanges();
             string cookie = _pmtsJwt.Create(user.Id);
             Response.Cookies.Append("userCookie", cookie, new CookieOptions
             {
@@ -287,6 +305,8 @@ namespace PMTS.Controllers
 
             TempData["LoginStatus"] = "LoginSuccess";
             TempData["AuthStatus"] = "AuthSuccess";
+            
+            
             return RedirectToAction("Index", "Home");
         }
 
