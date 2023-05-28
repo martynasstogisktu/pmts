@@ -21,7 +21,7 @@ using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
-using PMTS.Migrations;
+//using PMTS.Migrations;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Reflection.Metadata;
 
