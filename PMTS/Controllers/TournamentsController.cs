@@ -685,8 +685,8 @@ namespace PMTS.Controllers
 
         // POST: Tournaments/ConfirmPhoto/5
         // nuotraukos patvirtinimas kad yra paukstis (rankiniu budu)
-        [ValidateAntiForgeryToken]
-        [HttpPost, ActionName("ConfirmPhoto")]
+        //[ValidateAntiForgeryToken]
+        //[HttpPost, ActionName("ConfirmPhoto")]
         public async Task<IActionResult> ConfirmPhoto(int? id)
         {
             if (_context.Tournament == null || _context.Users == null || id == null)
@@ -899,12 +899,12 @@ namespace PMTS.Controllers
                     if (string.IsNullOrEmpty(ext) || !permittedExtensions.Contains(ext))
                     {
                         ModelState.AddModelError("PhotoData", "Failo tipas netinkamas.");
-                        return View(id);
+                        return View();
                     }
                     if (photoDTO.BirdsN <= 0)
                     {
                         ModelState.AddModelError("BirdsN", "Paukščių skaičius turi būti teigiamas skaičius.");
-                        return View(id);
+                        return View();
                     }
 
                 //jei naudotojas yra turnyro dalyvis
