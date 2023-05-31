@@ -794,7 +794,8 @@ namespace PMTS.Controllers
                     blobClient.Delete();
                     BlobClient blobClientThumb = _blobContainerClient.GetBlobClient(photo.ThumbName);
                     blobClientThumb.Delete();
-                    contestant.Points -= photo.Points;
+                    if(photo.BirdDetected)
+                        contestant.Points -= photo.Points;
                     _context.Photo.Remove(photo);
                     await _context.SaveChangesAsync();
                     return RedirectToAction("Details", new { Id = photo.TournamentId });
