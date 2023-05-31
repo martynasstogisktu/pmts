@@ -940,8 +940,8 @@ namespace PMTS.Controllers
                         }
                         else
                         {
-                            ModelState.AddModelError("PhotoData", "Failas per didelis.");
-                            return View(id);
+                            TempData["Error"] = "true";
+                            return View();
                         }
                     }
                 }

@@ -26,7 +26,12 @@
 @{
     if (TempData["PhotoAdded"] == "True")
     {
-        <h3>Nuotrauka pridėta!.</h3>
+        <h4>Nuotrauka pridėta.</h4>
+    }
+    if (TempData["Error"] == "true")
+    {
+        <h4>Failas per didelis.</h4>
+        <p>Maksimalus failo dydis: 4MB</p>
     }
 }
 
