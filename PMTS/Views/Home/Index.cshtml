@@ -3,31 +3,31 @@
 }
 
 <div class="text-center">
-    <h1 class="display-4">Paukščių medžioklės fotoaparatu varžybų sistema</h1>
+    <h1 class="display-4"><b>Paukščių medžioklės fotoaparatu varžybų sistema</b></h1>
 </div>
 
 @if(TempData["LoggedIn"] == "false")
 {
-    <a asp-area="" asp-controller="Users" asp-action="Login">Prisijungimas</a>
+    <a asp-area="" asp-controller="Users" asp-action="Login"><h4>Prisijungimas</h4></a>
     <br />
-    <a asp-area="" asp-controller="Users" asp-action="Register">Registracija</a>
+    <a asp-area="" asp-controller="Users" asp-action="Register"><h4>Registracija</h4></a>
     <br />
-    <a asp-area="" asp-controller="Tournaments" asp-action="Index">Turnyrų sąrašas</a>
+    <a asp-area="" asp-controller="Tournaments" asp-action="Index"><h4>Turnyrų sąrašas</h4></a>
 }
 else
 {
     if (TempData["IsAdmin"] == "true")
     {
-        <a asp-area="" asp-controller="Users" asp-action="Index">Naudotojų sąrašas</a>
+        <a asp-area="" asp-controller="Users" asp-action="Index"><h4>Naudotojų sąrašas</h4></a>
         <br />
-        <a asp-area="" asp-controller="Users" asp-action="RegisterAdmin">Administratoriaus paskyros kūrimas</a>
+        <a asp-area="" asp-controller="Users" asp-action="RegisterAdmin"><h4>Administratoriaus paskyros kūrimas</h4></a>
         <br />
-        <a asp-area="" asp-controller="Tournaments" asp-action="IndexAdmin">Turnyrų sąrašas</a>
+        <a asp-area="" asp-controller="Tournaments" asp-action="IndexAdmin"><h4>Turnyrų sąrašas</h4></a>
     }
     else
     {
-        <a asp-area="" asp-controller="Tournaments" asp-action="Index">Turnyrų sąrašas</a>
+        <a asp-area="" asp-controller="Tournaments" asp-action="Index"><h4>Turnyrų sąrašas</h4></a>
         <br />
-        <a asp-area="" asp-controller="Tournaments" asp-action="MyTournaments">Mano turnyrai</a>
+        <a asp-area="" asp-controller="Tournaments" asp-action="MyTournaments"><h4>Mano turnyrai</h4></a>
     }
 }
