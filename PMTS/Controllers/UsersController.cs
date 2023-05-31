@@ -264,10 +264,10 @@ namespace PMTS.Controllers
                 ModelState.AddModelError("Name", "Naudotojas nurodytu vardu nerastas.");
                 TempData["LoginStatus"] = "LoginFailed";
             }
-            else if (user.FailedLogins >= 3 && user.BlockTime.AddMinutes(1).ToUniversalTime() > DateTime.Now.ToUniversalTime())
+            else if (user.FailedLogins >= 3 && user.BlockTime.AddSeconds(20).ToUniversalTime() > DateTime.Now.ToUniversalTime())
             {
                 TempData["LoginBlocked"] = "true";
-                TempData["LoginTime"] = ((int)(user.BlockTime.AddMinutes(1).ToUniversalTime() - DateTime.Now.ToUniversalTime()).TotalSeconds).ToString();
+                TempData["LoginTime"] = ((int)(user.BlockTime.AddSeconds(20).ToUniversalTime() - DateTime.Now.ToUniversalTime()).TotalSeconds).ToString();
                 return View();
             }
             else
