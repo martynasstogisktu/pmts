@@ -325,6 +325,10 @@ namespace PMTS.Controllers
                 {
                     return RedirectToAction("Index", "Home");
                 }
+                if(tournament.StartTime >= tournament.EndTime)
+                {
+                    ModelState.AddModelError("EndTime", "Pabaiga negali būti anksčiau už ar sutapti su pradžia.");
+                }
                 tournament.Organizer = user.Name;
 
                 if (ModelState.IsValid)
@@ -468,7 +472,7 @@ namespace PMTS.Controllers
             {
                 return NotFound();
             }
-
+            addUserDTO.Name.Trim();
             var tournament = await _context.Tournament.FindAsync(id);
             var newContestant = _context.Users.FirstOrDefault(e => e.Name == addUserDTO.Name);
             if (tournament == null)
