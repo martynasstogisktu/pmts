@@ -114,7 +114,7 @@ namespace PMTS.Controllers
                     return View();
                 }
                 user.Admin = false;
-                user.Name.Trim();
+                user.Name = user.Name.Trim();
                 user.Password = _context.Helper.FromSql($"SELECT crypt({user.Password}, gen_salt('bf', 8));").ToList().FirstOrDefault().crypt;
                 _context.Add(user);
                 await _context.SaveChangesAsync();
@@ -226,7 +226,7 @@ namespace PMTS.Controllers
                         return View();
                     }
                     newUser.Admin = true;
-                    newUser.Name.Trim();
+                    user.Name = newUser.Name.Trim();
                     newUser.Password = _context.Helper.FromSql($"SELECT crypt({newUser.Password}, gen_salt('bf', 8));").ToList().FirstOrDefault().crypt;
                     _context.Add(newUser);
                     await _context.SaveChangesAsync();
@@ -260,7 +260,7 @@ namespace PMTS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginDTO login)
         {
-            login.Name.Trim();
+            login.Name = login.Name.Trim();
             User user = GetUser(login.Name);
             if (user == null)
             {

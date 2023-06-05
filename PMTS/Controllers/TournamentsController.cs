@@ -327,9 +327,11 @@ namespace PMTS.Controllers
                 }
                 if(tournament.StartTime >= tournament.EndTime)
                 {
-                    ModelState.AddModelError("EndTime", "Pabaiga negali būti anksčiau už ar sutapti su pradžia.");
+                    ModelState.AddModelError("EndTime", "Pabaiga negali būti anksčiau už pradžią ar su ja sutapti.");
                 }
                 tournament.Organizer = user.Name;
+
+                tournament.Name = tournament.Name.Trim();
 
                 if (ModelState.IsValid)
                 {
@@ -472,7 +474,7 @@ namespace PMTS.Controllers
             {
                 return NotFound();
             }
-            addUserDTO.Name.Trim();
+            addUserDTO.Name = addUserDTO.Name.Trim();
             var tournament = await _context.Tournament.FindAsync(id);
             var newContestant = _context.Users.FirstOrDefault(e => e.Name == addUserDTO.Name);
             if (tournament == null)
