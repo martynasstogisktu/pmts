@@ -165,6 +165,7 @@ namespace PMTS.Controllers
                     if (tournament.UserId == user.Id)
                     {
                         TempData["Organizer"] = "True";
+                        TempData["PhotosInList"] = _context.Photo.Where(p => !p.BirdDetected && p.TournamentId == tournament.Id).Count();
                     }
                     else
                     {

@@ -49,6 +49,26 @@
     }
     @if (TempData["IsAdmin"] == "false")
     {
+        <dl class="row">
+            <dt class="col-sm-2">
+                Turnyrų, kuriuose dalyvauta, skaičius
+            </dt>
+            <dd class="col-sm-10">
+                @TempData["TournamentN"]
+            </dd>
+            <dt class="col-sm-2">
+                Pirmų vietų skaičius
+            </dt>
+            <dd class="col-sm-10">
+                @TempData["Firsts"]
+            </dd>
+            <dt class="col-sm-2">
+                Vidutinė pozicija
+            </dt>
+            <dd class="col-sm-10">
+                @TempData["AvgPlace"]
+            </dd>
+        </dl>
         <a asp-controller="Tournaments" asp-action="MyTournaments">Mano turnyrai</a>
         <br />
     }

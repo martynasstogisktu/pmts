@@ -72,7 +72,45 @@ namespace PMTS.Controllers
                     TempData["RegisterEnabled"] = Environment.GetEnvironmentVariable("RegisterEnabled");
                 }
                 else
+                {
                     TempData["IsAdmin"] = "false";
+                    List<Contestant> contestants = await _context.Contestant.Where(u => u.UserId == user.Id).ToListAsync();
+                    int tournamentN = 0;
+                    int placements = 0;
+                    int firsts = 0;
+                    foreach (Contestant contestant in contestants)
+                    {
+                        tournamentN++;
+                        var tournament = _context.Tournament.FirstOrDefault(t => t.Id == contestant.TournamentId);
+                        _context.Tournament.Include(tournament => tournament.Contestants).ToList();
+                        var conts = _context.Contestant.Where(u => u.TournamentId == tournament.Id && !u.Removed).ToList().OrderBy(c => c.Id).OrderByDescending(c => c.Points);
+                        int i = 0;
+                        int placement = 0;
+                        foreach (Contestant cont in conts)
+                        {
+                            i++;
+                            if (cont.Id == contestant.Id)
+                                placement = i;
+                        }
+                        placements += placement;
+                        if (placement == 1)
+                            firsts++;
+                    }
+
+                    double avgPlace = 0;
+
+                    if (tournamentN != 0)
+                    {
+                        avgPlace = (double)placements / tournamentN;
+                    }
+                    TempData["TournamentN"] = tournamentN;
+                    TempData["Firsts"] = firsts;
+                    TempData["AvgPlace"] = avgPlace.ToString("0.##");
+                }
+                    
+
+                
+
                 return View(user);
             }
             catch (Exception ex)
