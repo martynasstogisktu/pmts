@@ -133,6 +133,9 @@ namespace PMTS.Controllers
                 tournament.Ongoing = false;
             }
 
+            _context.Tournament.Update(tournament);
+            _context.SaveChanges();
+
             //Active = true, Ongoing = false - galima prisijungti bet dar negalima kelti nuotrauku
             //Ongoing = true - turnyre galima dalyvauti ir kelti nuotraukas
             //Active = false - turnyre negalima dalyvauti (bagesi arba buvo nutrauktas)
@@ -355,6 +358,104 @@ namespace PMTS.Controllers
                 return RedirectToAction("Index", "Home");
             }
             
+        }
+
+        // GET: Tournaments/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null || _context.Tournament == null)
+            {
+                return NotFound();
+            }
+
+            var tournament = await _context.Tournament.FindAsync(id);
+            if (tournament == null)
+            {
+                return NotFound();
+            }
+            try
+            {
+                string cookie = Request.Cookies["userCookie"];
+                JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                User user = GetUser(int.Parse(validatedToken.Issuer));
+                if (user == null)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Index", "Home");
+                }
+                if (tournament.UserId == user.Id)
+                {
+                    return View(tournament);
+                }
+                else
+                {
+                    return RedirectToAction("Index");
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["AuthStatus"] = "AuthError";
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
+        // POST: Tournaments/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Name,IsPrivate,Active")] Tournament tournament)
+        {
+            if (id != tournament.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    string cookie = Request.Cookies["userCookie"];
+                    JwtSecurityToken validatedToken = _pmtsJwt.Validate(cookie);
+                    User user = GetUser(int.Parse(validatedToken.Issuer));
+                    if (user == null)
+                    {
+                        TempData["AuthStatus"] = "AuthError";
+                        return RedirectToAction("Index", "Home");
+                    }
+                    if (tournament.Organizer == user.Name)
+                    {
+                        try
+                        {
+                            _context.Update(tournament);
+                            await _context.SaveChangesAsync();
+                        }
+                        catch (DbUpdateConcurrencyException)
+                        {
+                            if (!TournamentExists(tournament.Id))
+                            {
+                                return NotFound();
+                            }
+                            else
+                            {
+                                throw;
+                            }
+                        }
+                        return RedirectToAction(nameof(Index));
+                    }
+                    else
+                    {
+                        return RedirectToAction("Index");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TempData["AuthStatus"] = "AuthError";
+                    return RedirectToAction("Index", "Home");
+                }
+
+            }
+            return View(tournament);
         }
 
         // POST: Tournaments/Join/5
