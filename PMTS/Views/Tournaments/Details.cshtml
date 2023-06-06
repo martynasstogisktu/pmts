@@ -77,7 +77,7 @@
             }
             if (TempData["Organizer"] == "True")
             {
-                if (Model.IsPrivate && TempData["Ongoing"] == "True")
+                if (Model.IsPrivate && Model.Active)
                 {
                     <a asp-action="AddUserToTournament" asp-route-id="@Model?.Id">Pridėti naudotoją </a>
                     <br />
@@ -85,6 +85,8 @@
                 <a asp-action="CheckPhoto" asp-route-id="@Model?.Id">Tikrinti nuotraukas (nepatikrintų nuotraukų: @TempData["PhotosInList"]) </a>
                 <br />
                 <a asp-action="Delete" asp-route-id="@Model?.Id">Trinti</a>
+                <br />
+                <a asp-action="Edit" asp-route-id="@Model?.Id">Redaguoti </a>
                 <br />
 
             }
@@ -116,6 +118,8 @@
 
             if (TempData["IsAdmin"] == "True")
             {
+                <a asp-action="Edit" asp-route-id="@Model?.Id">Redaguoti </a>
+                <br />
                 <a asp-action="Delete" asp-route-id="@Model?.Id">Trinti</a>
                 <br />
 

@@ -384,7 +384,7 @@ namespace PMTS.Controllers
                     TempData["AuthStatus"] = "AuthError";
                     return RedirectToAction("Index", "Home");
                 }
-                if (tournament.UserId == user.Id)
+                if (tournament.UserId == user.Id || user.Admin)
                 {
                     return View(tournament);
                 }
@@ -405,12 +405,15 @@ namespace PMTS.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Name,IsPrivate,Active")] Tournament tournament)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,IsPrivate,Active,UserId")] Tournament tournament)
         {
-            if (id != tournament.Id)
+            Tournament thisTournament = _context.Tournament.Where(t => t.Id == tournament.Id).FirstOrDefault();
+
+            if (id != thisTournament.Id)
             {
                 return NotFound();
             }
+
 
             if (ModelState.IsValid)
             {
@@ -424,16 +427,19 @@ namespace PMTS.Controllers
                         TempData["AuthStatus"] = "AuthError";
                         return RedirectToAction("Index", "Home");
                     }
-                    if (tournament.Organizer == user.Name)
+                    if (thisTournament.UserId == user.Id || user.Admin)
                     {
                         try
                         {
-                            _context.Update(tournament);
+                            thisTournament.Name = tournament.Name;
+                            thisTournament.IsPrivate = tournament.IsPrivate;
+                            thisTournament.Active = tournament.Active;
+                            _context.Update(thisTournament);
                             await _context.SaveChangesAsync();
                         }
                         catch (DbUpdateConcurrencyException)
                         {
-                            if (!TournamentExists(tournament.Id))
+                            if (!TournamentExists(thisTournament.Id))
                             {
                                 return NotFound();
                             }
@@ -442,7 +448,7 @@ namespace PMTS.Controllers
                                 throw;
                             }
                         }
-                        return RedirectToAction(nameof(Index));
+                        return RedirectToAction("Details", new { Id = id });
                     }
                     else
                     {
@@ -456,7 +462,7 @@ namespace PMTS.Controllers
                 }
 
             }
-            return View(tournament);
+            return RedirectToAction("Details", new { Id = id });
         }
 
         // POST: Tournaments/Join/5
