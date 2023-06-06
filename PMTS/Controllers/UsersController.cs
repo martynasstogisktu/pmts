@@ -284,6 +284,8 @@ namespace PMTS.Controllers
                     if (user.FailedLogins >= 3)
                     {
                         user.BlockTime = DateTime.Now.ToUniversalTime();
+                        TempData["LoginBlocked"] = "true";
+                        TempData["LoginTime"] = ((int)(user.BlockTime.AddSeconds(20).ToUniversalTime() - DateTime.Now.ToUniversalTime()).TotalSeconds).ToString();
                     }
                     _context.Users.Update(user);
                     _context.SaveChanges();
